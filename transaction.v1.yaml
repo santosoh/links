@@ -1316,7 +1316,7 @@ components:
     API Key:
       type: apiKey
       in: header
-      description: ''
+      description: 'API Key'
       name: X-Api-Key
 tags:
   - name: Transaction
