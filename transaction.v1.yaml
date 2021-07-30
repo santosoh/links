@@ -4,27 +4,27 @@ info:
   version: '1.0'
   description: |
     # Introduction
-    Grab Link REST API is developed to provide standard interface for merchant to accept payment from website or app. As some API may contain sensitive data in request/response message, merchant need to ensure that their environment is complied with PCI DSS security standard requirements before using those API.
+    Links REST API is developed to provide standard interface for merchant to accept payment from website or app. As some API may contain sensitive data in request/response message, merchant need to ensure that their environment is complied with PCI DSS security standard requirements before using those API.
 
     Merchant may also consider to use Links Client Side SDK (Links JS) to reduce the scope of PCI DSS requirement through tokenisation of card data.
 
     # Idempotency
-    Every API request from merchant to Grab Link may contain Idempotency-Key in the header (except for HTTP GET request), and used to identify subsequent retries of the same request, ie. if a request is sent with same Idempotency-Key with same details, eg. amount, payment method, etc, Grab Link will simply return previously completed response without performing any new action. Conversely, API request will return error If duplicate Idempotency-Key is sent with different details to prevent accidental usage.
+    Every API request from merchant to Links may contain Idempotency-Key in the header (except for HTTP GET request), and used to identify subsequent retries of the same request, ie. if a request is sent with same Idempotency-Key with same details, eg. amount, payment method, etc, Links will simply return previously completed response without performing any new action. Conversely, API request will return error If duplicate Idempotency-Key is sent with different details to prevent accidental usage.
 
     Idempotency-Key will be kept for 24 hours, and any request with the same Idempotency-Key beyond that time frame will be considered as a new request.
 
     # Encryption
     Other than raw PAN, merchant may encrypt the card data before sending through API. 
 
-    Grab Link will provides iOS and Android SDK to support merchant app to perform encryption, as well as web SDK to support merchant website.
+    Links will provides iOS and Android SDK to support merchant app to perform encryption, as well as web SDK to support merchant website.
 
     Details can be found here: 0. Card number encryption via SDK
 
     # Webhook
-    Merchant is able to set webhook endpoint for supported payment events on Grab Link Merchant Portal, and the result of any API request will be posted to this endpoint. This is especially necessary when the customer is redirected to another website (eg. in the case of 3D Secure Authentication).
+    Merchant is able to set webhook endpoint for supported payment events on Links Merchant Portal, and the result of any API request will be posted to this endpoint. This is especially necessary when the customer is redirected to another website (eg. in the case of 3D Secure Authentication).
 
     # Signature Hash
-    Merchant need to calculate signature hash and include it in header, to ensure data integrity when consuming Grab Link API. Each merchant will be assigned with a secret key, and this key would be used when generating HMAC signature.
+    Merchant need to calculate signature hash and include it in header, to ensure data integrity when consuming Links API. Each merchant will be assigned with a secret key, and this key would be used when generating HMAC signature.
 
     ### Step to generate HMAC signature:
     1. Generate timestamp (unix timestamp)
