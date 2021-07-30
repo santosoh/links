@@ -8,15 +8,6 @@ info:
 
     Merchant may also consider to use Links Client Side SDK (Links JS) to reduce the scope of PCI DSS requirement through tokenisation of card data.
 
-    ## Authentication
-    Merchant would be assigned with API Key that would be required when consuming Grab Link API.
-
-    There are 2 types of API Key: Private API Key and Public API Key.
-
-    Most of Grab Link APIs are designed for server to server connection, therefore Private API Key should be used, kept private and not exposed to front end components such as website or app.
-
-    Public API Key is used to call certain Grab Link API from front end, such as to obtain single-use token from merchant hosted payment page to be used in the subsequent transaction that follows.
-
     ## Idempotency
     Every API request from merchant to Grab Link may contain Idempotency-Key in the header (except for HTTP GET request), and used to identify subsequent retries of the same request, ie. if a request is sent with same Idempotency-Key with same details, eg. amount, payment method, etc, Grab Link will simply return previously completed response without performing any new action. Conversely, API request will return error If duplicate Idempotency-Key is sent with different details to prevent accidental usage.
 
