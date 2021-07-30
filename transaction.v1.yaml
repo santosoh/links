@@ -1364,13 +1364,13 @@ components:
       type: apiKey
       in: header
       description: |-
-        Merchant would be assigned with API Key that would be required when consuming Grab Link API.
+        Merchant would be assigned with API Key that would be required when consuming Links API.
 
         There are 2 types of API Key: Private API Key and Public API Key.
 
-        Most of Grab Link APIs are designed for server to server connection, therefore Private API Key should be used, kept private and not exposed to front end components such as website or app.
+        Most of Links APIs are designed for server to server connection, therefore Private API Key should be used, kept private and not exposed to front end components such as website or app.
 
-        Public API Key is used to call certain Grab Link API from front end, such as to obtain single-use token from merchant hosted payment page to be used in the subsequent transaction that follows.
+        Public API Key is used to call certain Links API from front end, such as to obtain single-use token from merchant hosted payment page to be used in the subsequent transaction that follows.
       name: X-Api-Key
 tags:
   - name: Transaction
