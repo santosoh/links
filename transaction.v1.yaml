@@ -4,8 +4,8 @@ info:
   version: '1.0'
   description: Transaction Processing Services for supported payment methods
   contact:
-    email: grablink.engineering@grab.com
-    name: GrabLink Engineering
+    email: a@b.c
+    name: Links Engineering
 servers:
   - url: localhost
 paths:
