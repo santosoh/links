@@ -1312,7 +1312,12 @@ paths:
       security: []
 components:
   schemas: {}
-  securitySchemes: {}
+  securitySchemes:
+    API Key:
+      type: apiKey
+      in: header
+      description: ''
+      name: X-Api-Key
 tags:
   - name: Transaction
   - name: Capture
