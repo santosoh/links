@@ -1330,3 +1330,5 @@ tags:
   - name: Capture
   - name: Cancel
   - name: Refund
+security:
+  - API Key: []
