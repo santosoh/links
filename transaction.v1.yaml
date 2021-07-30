@@ -28,7 +28,7 @@ info:
 
     ### Step to generate HMAC signature:
     1. Generate timestamp (unix timestamp)
-    2. Concatenate request-body with timestamp in the following format:
+    2. Concatenate request-body with timestamp in the following format:  
     concatenated-string = {request-body} + ",t={timestamp}"
     3. Calculate HMAC using SHA512 hashing  
     signature-hash = hmac-sha512(concatenated-string, {secret-key})
