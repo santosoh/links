@@ -26,7 +26,7 @@ info:
     # Signature Hash
     Merchant need to calculate signature hash and include it in header, to ensure data integrity when consuming Grab Link API. Each merchant will be assigned with a secret key, and this key would be used when generating HMAC signature.
 
-    ## Step to generate HMAC signature:
+    ### Step to generate HMAC signature:
     1. Generate timestamp (unix timestamp)
     2. Concatenate request-body with timestamp in the following format:
     concatenated-string = {request-body} + ",t={timestamp}"
@@ -36,7 +36,7 @@ info:
     5. Include Timestamp to header
     6. Include Signature to header
 
-    ## Sample
+    ### Sample
     ### Example of message to be signed
     > {"merchant_order_num":"LESTERCHAN-001","capture_after_hours":"0","route_indicator":"LinksMerchant","require_3ds":true,"payer":{"reference_id":"k11ir27iftfjescf4bhc18qpbdsv2dl7","name":"Lester Chan","email":"lester.chan@grab.com","phone":"+6598765432","billing_address":{"city":"Singapore","country":"Singapore","state":"Singapore","building_name":"Grab HQ","street":"Media Link","postal_code":"139305"},"shipping_address":{"city":"SG","country":"Singapore","state":"SG","building_name":"Marina One","street":"9 Straits View","postal_code":"018937"}},"statement_descriptor":"LINKS","cart":{"cart_total":"16.00","cart_tax":"3.00","cart_shipping_fee":"2.00","cart_items":[{"item_name":"lesterchan.net Square Sticker","item_quantity":1,"item_price":"6.00","item_image":"https://lesterchan.net/content/themes/lesterchan.net/img/avatars/100.jpg","item_option":"Transparent"},{"item_name":"lesterchan.net Rectangle Sticker","item_quantity":2,"item_price":"2.00","item_image":"https://lesterchan.net/content/themes/lesterchan/img/logos/logo-800x600.png","item_option":"Large"}],"cart_currency":"SGD","cart_discount":"0.00"},"hpp":{"return_url":"https://lesterchan.net/shop/success","cancel_url":"https://lesterchan.net/shop/cancellester.chan@grab.com","phone":"+6598765432","billing_address":{"city":"Singapore","country":"Singapore","state":"Singapore","building_name":"Grab HQ","street":"Media Link","postal_code":"139305"},"shipping_address":{"city":"SG","country":"Singapore","state":"SG","building_name":"Marina One","street":"9 Straits View","postal_code":"018937"}},"statement_descriptor":"LINKS","cart":{"cart_total":"16.00","cart_tax":"3.00","cart_shipping_fee":"2.00","cart_items":[{"item_name":"lesterchan.net Square Sticker","item_quantity":1,"item_price":"6.00","item_image":"https://lesterchan.net/content/themes/lesterchan.net/img/avatars/100.jpg","item_option":"Transparent"},{"item_name":"lesterchan.net Rectangle Sticker","item_quantity":2,"item_price":"2.00","item_image":"https://lesterchan.net/content/themes/lesterchan/img/logos/logo-800x600.png","item_option":"Large"}],"cart_currency":"SGD","cart_discount":"0.00"},"hpp":{"return_url":"https://lesterchan.net/shop/success","cancel_url":"https://lesterchan.net/shop/cancel","browser_info":{"ip":"127.0.0.1","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"}}}
 
