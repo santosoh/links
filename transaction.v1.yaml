@@ -1,0 +1,1288 @@
+openapi: 3.0.0
+info:
+  title: gl-online
+  version: '1.0'
+  description: Transaction Processing Services for supported payment methods
+  contact:
+    email: grablink.engineering@grab.com
+    name: GrabLink Engineering
+servers:
+  - url: localhost
+paths:
+  /transaction:
+    post:
+      summary: Create Transaction
+      operationId: post-transaction
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trans_id:
+                    type: string
+                  action_time:
+                    type: string
+                  merchant_action_id:
+                    type: string
+                  merchant_order_num:
+                    type: string
+                  amount:
+                    type: object
+                    required:
+                      - currency
+                      - value
+                    properties:
+                      currency:
+                        type: string
+                      value:
+                        type: string
+                  pos_data:
+                    type: object
+                    properties:
+                      pos_id:
+                        type: string
+                  result:
+                    type: object
+                    required:
+                      - code
+                      - message
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      raw_message:
+                        type: string
+                  auth_code:
+                    type: string
+                  cvc_result:
+                    type: string
+                  avs_result:
+                    type: string
+                  acquirer_reference:
+                    type: string
+                  three_ds:
+                    type: object
+                    properties:
+                      redirection_url:
+                        type: string
+                      sdk_auth_response:
+                        type: string
+                  payer:
+                    type: object
+                    required:
+                      - reference_id
+                    properties:
+                      reference_id:
+                        type: string
+                  payment_method:
+                    type: object
+                    properties:
+                      card:
+                        type: object
+                        properties:
+                          brand:
+                            type: string
+                          first_6:
+                            type: string
+                          last_4:
+                            type: string
+                          funding_type:
+                            type: string
+                          category:
+                            type: string
+                          issuing_country:
+                            type: string
+                          issuing_bank:
+                            type: string
+                      token:
+                        type: object
+                        properties:
+                          token_id:
+                            type: string
+                      card_present:
+                        type: object
+                        description: Mandatory for Card Present transaction
+                        properties:
+                          brand:
+                            type: string
+                          first_6:
+                            type: string
+                          last_4:
+                            type: string
+                          funding_type:
+                            type: string
+                          icc_data:
+                            type: string
+                            description: |-
+                              Mandatory for chip and contactless transaction.
+
+                              Base64 encoded format of ICC data as defined by EMV
+                      fingerprint:
+                        type: string
+                  trans_status:
+                    type: string
+                  metadata:
+                    type: string
+                required:
+                  - trans_id
+                  - action_time
+                  - merchant_action_id
+                  - amount
+                  - result
+                  - payer
+              examples:
+                example:
+                  value:
+                    trans_id: string
+                    action_time: string
+                    merchant_action_id: string
+                    merchant_order_num: string
+                    amount:
+                      currency: string
+                      value: string
+                    pos_data:
+                      pos_id: string
+                    result:
+                      code: string
+                      message: string
+                      raw_message: string
+                    auth_code: string
+                    cvc_result: string
+                    avs_result: string
+                    acquirer_reference: string
+                    three_ds:
+                      redirection_url: string
+                      sdk_auth_response: string
+                    payer:
+                      reference_id: string
+                    payment_method:
+                      card:
+                        brand: string
+                        first_6: string
+                        last_4: string
+                        funding_type: string
+                        category: string
+                        issuing_country: string
+                        issuing_bank: string
+                      token:
+                        token_id: string
+                      card_present:
+                        brand: string
+                        first_6: string
+                        last_4: string
+                        funding_type: string
+                        icc_data: string
+                      fingerprint: string
+                    trans_status: string
+                    metadata: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                  description: 'Unique transaction id assigned by merchant for each request. '
+                merchant_order_num:
+                  type: string
+                  description: The value of this parameter can be used to refer a transaction to the particular order record in merchant's system.
+                amount:
+                  type: object
+                  description: Transaction Amount to be authorised.
+                  required:
+                    - currency
+                    - value
+                  properties:
+                    currency:
+                      type: string
+                    value:
+                      type: string
+                capture_after_hours:
+                  type: string
+                  description: |-
+                    Value greater than 0 indicates delayed capture of the authorisation by x hours.
+
+                    0 indicates immediate capture. Max numeric string is "720".
+
+                    Authorisation will not be automatically captured if this parameter is empty or not set.
+                route_indicator:
+                  type: string
+                  description: Used to define routing algorithm to be used in a transaction
+                require_3ds:
+                  type: boolean
+                  description: 'This parameter indicates if you want to perform 3DS for a transaction or not. Allowed values: true or false. Default value is false.'
+                three_ds:
+                  type: object
+                  description: Mandatory when require_3ds parameter is set.
+                  properties:
+                    return_url:
+                      type: string
+                    browser_info:
+                      type: object
+                      properties:
+                        accept_header:
+                          type: string
+                        user_agent:
+                          type: string
+                        language:
+                          type: string
+                        color_depth:
+                          type: string
+                        screen_height:
+                          type: string
+                        screen_width:
+                          type: string
+                        java_enabled:
+                          type: boolean
+                        javascript_enabled:
+                          type: boolean
+                        timezone_offset:
+                          type: string
+                    account_info:
+                      type: object
+                      description: The account information is used to improve the chance for Frictionless 3DS2 Authentication.
+                      properties:
+                        account_age_indicator:
+                          type: string
+                          enum:
+                            - '01'
+                            - '02'
+                            - '03'
+                            - '04'
+                            - '05'
+                        account_change_date:
+                          type: string
+                        account_change_indicator:
+                          type: string
+                          enum:
+                            - '01'
+                            - '02'
+                            - '03'
+                            - '04'
+                        account_date:
+                          type: string
+                        account_password_change_date:
+                          type: string
+                        account_password_change_indicator:
+                          type: string
+                          enum:
+                            - '01'
+                            - '02'
+                            - '03'
+                            - '04'
+                            - '05'
+                        account_purchase_count:
+                          type: number
+                        account_provisioning_attempts:
+                          type: number
+                        account_day_transactions:
+                          type: number
+                        account_year_transactions:
+                          type: number
+                        payment_account_age:
+                          type: string
+                        payment_account_age_indicator:
+                          type: string
+                          enum:
+                            - '01'
+                            - '02'
+                            - '03'
+                            - '04'
+                            - '05'
+                        ship_address_usage_date:
+                          type: string
+                        ship_address_usage_indicator:
+                          type: string
+                          enum:
+                            - '01'
+                            - '02'
+                            - '03'
+                            - '04'
+                        ship_name_indicator:
+                          type: string
+                          enum:
+                            - '01'
+                            - '02'
+                        suspicious_account_activity:
+                          type: boolean
+                    sdk_auth_request:
+                      type: string
+                      description: |-
+                        Mandatory for Native App Based 3DS2 Authentication.
+
+                        Packed form of all other properties from 3DS2 SDK. The value consists of App ID, SDK Trans ID, Encrypted Device Data, Ephemeral Public Key, SDK Ref Number, SDK Max Timeout, Message Version, Interface and UI Type Options,
+
+                        Can be obtained from 3DS2 SDK.
+                three_ds_data:
+                  type: object
+                  description: Merchant may perform 3DS authentication using third party MPI/3DS Server and include the result here.
+                  properties:
+                    xid:
+                      type: string
+                      description: To be used for 3D Secure v1 only
+                    ds_trans_id:
+                      type: string
+                      description: To be used for 3D Secure v2 only
+                    status:
+                      type: string
+                      enum:
+                        - 'Y'
+                        - 'N'
+                        - A
+                        - U
+                    eci:
+                      type: string
+                    auth_value:
+                      type: string
+                    auth_algo:
+                      type: string
+                    version:
+                      type: string
+                payer:
+                  type: object
+                  required:
+                    - reference_id
+                  properties:
+                    reference_id:
+                      type: string
+                      description: Unique customer identifier.
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    phone:
+                      type: string
+                    billing_address:
+                      type: object
+                      properties:
+                        city:
+                          type: string
+                        country:
+                          type: string
+                        state:
+                          type: string
+                        building_name:
+                          type: string
+                        street:
+                          type: string
+                        postal_code:
+                          type: string
+                    shipping_address:
+                      type: object
+                      properties:
+                        city:
+                          type: string
+                        country:
+                          type: string
+                        state:
+                          type: string
+                        building_name:
+                          type: string
+                        street:
+                          type: string
+                        postal_code:
+                          type: string
+                pos_data:
+                  type: object
+                  properties:
+                    pos_id:
+                      type: string
+                    pos_entry_mode:
+                      type: object
+                      properties:
+                        pan_entry:
+                          type: string
+                          enum:
+                            - unknown
+                            - manual
+                            - magstripe
+                            - chip
+                            - contactless_chip
+                            - contactless_magstripe
+                            - fallback_magstripe
+                        pin_entry:
+                          type: string
+                          enum:
+                            - unknown
+                            - enabled
+                            - disabled
+                            - error
+                    pos_condition_code:
+                      type: string
+                      enum:
+                        - attended
+                        - unattended
+                        - mail_order
+                device_info:
+                  type: object
+                  properties:
+                    app_version:
+                      type: string
+                    platform:
+                      type: string
+                    spec:
+                      type: string
+                    ip:
+                      type: string
+                    geo_location:
+                      type: object
+                      properties:
+                        latitude:
+                          type: string
+                        longitude:
+                          type: string
+                payment_method:
+                  type: object
+                  properties:
+                    card:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                        expiry_month:
+                          type: string
+                        expiry_year:
+                          type: string
+                        cvc:
+                          type: string
+                        holder_name:
+                          type: string
+                        create_token:
+                          type: boolean
+                    token:
+                      type: object
+                      properties:
+                        token_id:
+                          type: string
+                    card_present:
+                      type: object
+                      description: Mandatory for Card Present transaction
+                      properties:
+                        number:
+                          type: string
+                        expiry_month:
+                          type: string
+                        expiry_year:
+                          type: string
+                        cvc:
+                          type: string
+                        sequence_num:
+                          type: string
+                        icc_data:
+                          type: string
+                          description: |-
+                            Mandatory for chip and contactless transaction.
+
+                            Base64 encoded format of ICC data as defined by EMV
+                        track2_data:
+                          type: string
+                        pin_block:
+                          type: string
+                        pin_format:
+                          type: string
+                        pin_key_id:
+                          type: string
+                statement_descriptor:
+                  type: string
+                sub_merchant:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    city:
+                      type: string
+                    country:
+                      type: string
+                    state:
+                      type: string
+                    street:
+                      type: string
+                    postal_code:
+                      type: string
+                    mcc:
+                      type: string
+                metadata:
+                  type: string
+              required:
+                - merchant_action_id
+                - amount
+                - payer
+            examples:
+              example:
+                value:
+                  merchant_action_id: string
+                  merchant_order_num: string
+                  amount:
+                    currency: string
+                    value: string
+                  capture_after_hours: string
+                  route_indicator: string
+                  require_3ds: true
+                  three_ds:
+                    return_url: string
+                    browser_info:
+                      accept_header: string
+                      user_agent: string
+                      language: string
+                      color_depth: string
+                      screen_height: string
+                      screen_width: string
+                      java_enabled: true
+                      javascript_enabled: true
+                      timezone_offset: string
+                    account_info:
+                      account_age_indicator: '01'
+                      account_change_date: string
+                      account_change_indicator: '01'
+                      account_date: string
+                      account_password_change_date: string
+                      account_password_change_indicator: '01'
+                      account_purchase_count: 0
+                      account_provisioning_attempts: 0
+                      account_day_transactions: 0
+                      account_year_transactions: 0
+                      payment_account_age: string
+                      payment_account_age_indicator: '01'
+                      ship_address_usage_date: string
+                      ship_address_usage_indicator: '01'
+                      ship_name_indicator: '01'
+                      suspicious_account_activity: true
+                    sdk_auth_request: string
+                  three_ds_data:
+                    xid: string
+                    ds_trans_id: string
+                    status: 'Y'
+                    eci: string
+                    auth_value: string
+                    auth_algo: string
+                    version: string
+                  payer:
+                    reference_id: string
+                    name: string
+                    email: string
+                    phone: string
+                    billing_address:
+                      city: string
+                      country: string
+                      state: string
+                      building_name: string
+                      street: string
+                      postal_code: string
+                    shipping_address:
+                      city: string
+                      country: string
+                      state: string
+                      building_name: string
+                      street: string
+                      postal_code: string
+                  pos_data:
+                    pos_id: string
+                    pos_entry_mode:
+                      pan_entry: unknown
+                      pin_entry: unknown
+                    pos_condition_code: attended
+                  device_info:
+                    app_version: string
+                    platform: string
+                    spec: string
+                    ip: string
+                    geo_location:
+                      latitude: string
+                      longitude: string
+                  payment_method:
+                    card:
+                      number: string
+                      expiry_month: string
+                      expiry_year: string
+                      cvc: string
+                      holder_name: string
+                      create_token: true
+                    token:
+                      token_id: string
+                    card_present:
+                      number: string
+                      expiry_month: string
+                      expiry_year: string
+                      cvc: string
+                      sequence_num: string
+                      icc_data: string
+                      track2_data: string
+                      pin_block: string
+                      pin_format: string
+                      pin_key_id: string
+                  statement_descriptor: string
+                  sub_merchant:
+                    id: string
+                    name: string
+                    city: string
+                    country: string
+                    state: string
+                    street: string
+                    postal_code: string
+                    mcc: string
+                  metadata: string
+        description: Create Transaction
+      description: Create Transaction
+      parameters:
+        - schema:
+            type: string
+            description: application/json
+            minLength: 1
+            maxLength: 32
+          in: header
+          name: Content-Type
+          required: true
+          description: application/json
+        - schema:
+            type: string
+            description: HMAC-SHA512
+            minLength: 1
+            maxLength: 256
+          in: header
+          name: Signature
+          required: true
+          description: HMAC-SHA512
+        - schema:
+            type: string
+            description: UNIX Timestamp
+            minLength: 1
+            maxLength: 16
+          in: header
+          name: Timestamp
+          required: true
+          description: Unix Timestamp
+        - schema:
+            type: string
+            minLength: 0
+            maxLength: 64
+          in: header
+          name: Idempotency-Key
+          description: Unique value generated by the merchant used to identify subsequent retries of the same request as long as other details remain the same.
+        - schema:
+            type: string
+            format: uuid
+            minLength: 0
+            maxLength: 64
+          in: header
+          name: X-Request-ID
+          description: Unique Message ID
+      tags:
+        - Transaction
+      security:
+        - API Key: []
+  '/transaction/{trans_id}':
+    parameters:
+      - schema:
+          type: string
+        name: trans_id
+        in: path
+        required: true
+        description: GL Transaction ID from Authorization Response
+    get:
+      summary: Retrieve Transaction
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trans_id:
+                    type: string
+                  merchant_order_num:
+                    type: string
+                  amount:
+                    type: object
+                    properties:
+                      currency:
+                        type: string
+                      value:
+                        type: string
+                  pos_data:
+                    type: object
+                    properties:
+                      pos_id:
+                        type: string
+                  auth_code:
+                    type: string
+                  cvc_result:
+                    type: string
+                  avs_result:
+                    type: string
+                  acquirer_reference:
+                    type: string
+                  payer:
+                    type: object
+                    properties:
+                      reference_id:
+                        type: string
+                    required:
+                      - reference_id
+                  payment_method:
+                    type: object
+                    properties:
+                      card:
+                        type: object
+                        properties:
+                          brand:
+                            type: string
+                          first_6:
+                            type: string
+                          last_4:
+                            type: string
+                          funding_type:
+                            type: string
+                          category:
+                            type: string
+                          issuing_country:
+                            type: string
+                          issuing_bank:
+                            type: string
+                      token:
+                        type: object
+                        properties:
+                          token_id:
+                            type: string
+                      card_present:
+                        type: object
+                        description: Mandatory for Card Present transaction
+                        properties:
+                          brand:
+                            type: string
+                          first_6:
+                            type: string
+                          last_4:
+                            type: string
+                          funding_type:
+                            type: string
+                          icc_data:
+                            type: string
+                            description: |-
+                              Mandatory for chip and contactless transaction.
+
+                              Base64 encoded format of ICC data as defined by EMV
+                      fingerprint:
+                        type: string
+                  trans_status:
+                    type: string
+                  metadata:
+                    type: string
+                  trans_logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        action_type:
+                          type: string
+                          description: authorize/capture/refund/cancel
+                        action_time:
+                          type: string
+                        merchant_action_id:
+                          type: string
+                        initiating_reason:
+                          type: string
+                        amount:
+                          type: object
+                          properties:
+                            currency:
+                              type: string
+                            value:
+                              type: string
+                        result:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                            message:
+                              type: string
+                            raw_message:
+                              type: string
+              examples:
+                example:
+                  value:
+                    trans_id: string
+                    merchant_order_num: string
+                    amount:
+                      currency: string
+                      value: string
+                    pos_data:
+                      pos_id: string
+                    auth_code: string
+                    cvc_result: string
+                    avs_result: string
+                    acquirer_reference: string
+                    payer:
+                      reference_id: string
+                    payment_method:
+                      card:
+                        brand: string
+                        first_6: string
+                        last_4: string
+                        funding_type: string
+                        category: string
+                        issuing_country: string
+                        issuing_bank: string
+                      token:
+                        token_id: string
+                      card_present:
+                        brand: string
+                        first_6: string
+                        last_4: string
+                        funding_type: string
+                        icc_data: string
+                      fingerprint: string
+                    trans_status: string
+                    metadata: string
+                    trans_logs:
+                      - action_type: string
+                        action_time: string
+                        merchant_action_id: string
+                        initiating_reason: string
+                        amount:
+                          currency: string
+                          value: string
+                        result:
+                          code: string
+                          message: string
+                          raw_message: string
+      operationId: get-transaction-id
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: header
+          name: X-Request-ID
+      description: Retrieve Transaction
+      tags:
+        - Transaction
+      security:
+        - API Key: []
+  '/transaction/{trans_id}/capture':
+    parameters:
+      - schema:
+          type: string
+        name: trans_id
+        in: path
+        required: true
+        description: GL Transaction ID from Authorization Response
+    post:
+      summary: Capture
+      operationId: post-transaction-trans_id-capture
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_time:
+                    type: string
+                  merchant_action_id:
+                    type: string
+                  amount:
+                    type: object
+                    properties:
+                      currency:
+                        type: string
+                      value:
+                        type: string
+                  pos_data:
+                    type: object
+                    properties:
+                      pos_id:
+                        type: string
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      raw_message:
+                        type: string
+              examples:
+                example:
+                  value:
+                    action_time: string
+                    merchant_action_id: string
+                    amount:
+                      currency: string
+                      value: string
+                    pos_data:
+                      pos_id: string
+                    result:
+                      code: string
+                      message: string
+                      raw_message: string
+      description: Capture
+      parameters:
+        - schema:
+            type: string
+            description: application/json
+            minLength: 1
+            maxLength: 32
+          in: header
+          name: Content-Type
+          required: true
+          description: application/json
+        - schema:
+            type: string
+            description: HMAC-SHA512
+            minLength: 1
+            maxLength: 256
+          in: header
+          name: Signature
+          required: true
+          description: HMAC-SHA512
+        - schema:
+            type: string
+            description: UNIX Timestamp
+            minLength: 1
+            maxLength: 16
+          in: header
+          name: Timestamp
+          required: true
+          description: Unix Timestamp
+        - schema:
+            type: string
+            minLength: 0
+            maxLength: 64
+          in: header
+          name: Idempotency-Key
+          description: Unique value generated by the merchant used to identify subsequent retries of the same request as long as other details remain the same.
+        - schema:
+            type: string
+            format: uuid
+            minLength: 0
+            maxLength: 64
+          in: header
+          name: X-Request-ID
+          description: Unique Message ID
+      tags:
+        - Capture
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                amount:
+                  type: object
+                  properties:
+                    currency:
+                      type: string
+                    value:
+                      type: string
+                pos_data:
+                  type: object
+                  properties:
+                    pos_id:
+                      type: string
+            examples:
+              example:
+                value:
+                  merchant_action_id: string
+                  amount:
+                    currency: string
+                    value: string
+                  pos_data:
+                    pos_id: string
+        description: Capture
+      security:
+        - API Key: []
+  '/transaction/{trans_id}/refund':
+    parameters:
+      - schema:
+          type: string
+        name: trans_id
+        in: path
+        required: true
+        description: GL Transaction ID from Authorization Response
+    post:
+      summary: Refund
+      operationId: post-transaction-trans_id-refund
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_time:
+                    type: string
+                  merchant_action_id:
+                    type: string
+                  amount:
+                    type: object
+                    properties:
+                      currency:
+                        type: string
+                      value:
+                        type: string
+                  pos_data:
+                    type: object
+                    properties:
+                      pos_id:
+                        type: string
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      raw_message:
+                        type: string
+              examples:
+                example:
+                  value:
+                    action_time: string
+                    merchant_action_id: string
+                    amount:
+                      currency: string
+                      value: string
+                    pos_data:
+                      pos_id: string
+                    result:
+                      code: string
+                      message: string
+                      raw_message: string
+      description: Refund
+      parameters:
+        - schema:
+            type: string
+            description: application/json
+            minLength: 1
+            maxLength: 32
+          in: header
+          name: Content-Type
+          required: true
+          description: application/json
+        - schema:
+            type: string
+            description: HMAC-SHA512
+            minLength: 1
+            maxLength: 256
+          in: header
+          name: Signature
+          required: true
+          description: HMAC-SHA512
+        - schema:
+            type: string
+            description: UNIX Timestamp
+            minLength: 1
+            maxLength: 16
+          in: header
+          name: Timestamp
+          required: true
+          description: Unix Timestamp
+        - schema:
+            type: string
+            minLength: 0
+            maxLength: 64
+          in: header
+          name: Idempotency-Key
+          description: Unique value generated by the merchant used to identify subsequent retries of the same request as long as other details remain the same.
+        - schema:
+            type: string
+            format: uuid
+            minLength: 0
+            maxLength: 64
+          in: header
+          name: X-Request-ID
+          description: Unique Message ID
+      tags:
+        - Refund
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                initiating_reason:
+                  type: string
+                amount:
+                  type: object
+                  properties:
+                    currency:
+                      type: string
+                    value:
+                      type: string
+                pos_data:
+                  type: object
+                  properties:
+                    pos_id:
+                      type: string
+            examples:
+              example:
+                value:
+                  merchant_action_id: string
+                  initiating_reason: string
+                  amount:
+                    currency: string
+                    value: string
+                  pos_data:
+                    pos_id: string
+        description: Refund
+      security:
+        - API Key: []
+  '/transaction/{trans_id}/cancel':
+    parameters:
+      - schema:
+          type: string
+        name: trans_id
+        in: path
+        required: true
+        description: GL Transaction ID from Authorization Response
+    post:
+      summary: Cancel
+      operationId: post-transaction-trans_id-cancel
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_time:
+                    type: string
+                  merchant_action_id:
+                    type: string
+                  amount:
+                    type: object
+                    properties:
+                      currency:
+                        type: string
+                      value:
+                        type: string
+                  pos_data:
+                    type: object
+                    properties:
+                      pos_id:
+                        type: string
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      raw_message:
+                        type: string
+              examples:
+                example:
+                  value:
+                    action_time: string
+                    merchant_action_id: string
+                    amount:
+                      currency: string
+                      value: string
+                    pos_data:
+                      pos_id: string
+                    result:
+                      code: string
+                      message: string
+                      raw_message: string
+      description: Cancel
+      parameters:
+        - schema:
+            type: string
+            description: application/json
+            minLength: 1
+            maxLength: 32
+          in: header
+          name: Content-Type
+          required: true
+          description: application/json
+        - schema:
+            type: string
+            description: HMAC-SHA512
+            minLength: 1
+            maxLength: 256
+          in: header
+          name: Signature
+          required: true
+          description: HMAC-SHA512
+        - schema:
+            type: string
+            description: UNIX Timestamp
+            minLength: 1
+            maxLength: 16
+          in: header
+          name: Timestamp
+          required: true
+          description: Unix Timestamp
+        - schema:
+            type: string
+            minLength: 0
+            maxLength: 64
+          in: header
+          name: Idempotency-Key
+          description: Unique value generated by the merchant used to identify subsequent retries of the same request as long as other details remain the same.
+        - schema:
+            type: string
+            format: uuid
+            minLength: 0
+            maxLength: 64
+          in: header
+          name: X-Request-ID
+          description: Unique Message ID
+      tags:
+        - Cancel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                initiating_reason:
+                  type: string
+                pos_data:
+                  type: object
+                  properties:
+                    pos_id:
+                      type: string
+            examples:
+              example:
+                value:
+                  merchant_action_id: string
+                  initiating_reason: string
+                  pos_data:
+                    pos_id: string
+        description: Cancel
+      security:
+        - API Key: []
+components:
+  schemas: {}
+  securitySchemes:
+    API Key:
+      name: X-Api-Key
+      type: apiKey
+      in: header
+tags:
+  - name: Transaction
+  - name: Capture
+  - name: Cancel
+  - name: Refund
