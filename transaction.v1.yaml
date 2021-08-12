@@ -2,54 +2,7 @@ openapi: 3.0.0
 info:
   title: Transaction API
   version: '1.0'
-  description: |
-    # Introduction
-    Grab Link REST API is developed to provide standard interface for merchant to accept payment from website or app. As some API may contain sensitive data in request/response message, merchant need to ensure that their environment is complied with PCI DSS security standard requirements before using those API.
-
-    Merchant may also consider to use Links Client Side SDK (Links JS) to reduce the scope of PCI DSS requirement through tokenisation of card data.
-
-    # Idempotency
-    Every API request from merchant to Grab Link may contain Idempotency-Key in the header (except for HTTP GET request), and used to identify subsequent retries of the same request, ie. if a request is sent with same Idempotency-Key with same details, eg. amount, payment method, etc, Grab Link will simply return previously completed response without performing any new action. Conversely, API request will return error If duplicate Idempotency-Key is sent with different details to prevent accidental usage.
-
-    Idempotency-Key will be kept for 24 hours, and any request with the same Idempotency-Key beyond that time frame will be considered as a new request.
-
-    # Encryption
-    Other than raw PAN, merchant may encrypt the card data before sending through API. 
-
-    Grab Link will provides iOS and Android SDK to support merchant app to perform encryption, as well as web SDK to support merchant website.
-
-    Details can be found here: 0. Card number encryption via SDK
-
-    # Webhook
-    Merchant is able to set webhook endpoint for supported payment events on Grab Link Merchant Portal, and the result of any API request will be posted to this endpoint. This is especially necessary when the customer is redirected to another website (eg. in the case of 3D Secure Authentication).
-
-    # Signature Hash
-    Merchant need to calculate signature hash and include it in header, to ensure data integrity when consuming Grab Link API. Each merchant will be assigned with a secret key, and this key would be used when generating HMAC signature.
-
-    ### Step to generate HMAC signature:
-    1. Generate timestamp (unix timestamp)
-    2. Concatenate request-body with timestamp in the following format:  
-    concatenated-string = {request-body} + ",t={timestamp}"
-    3. Calculate HMAC using SHA512 hashing  
-    signature-hash = hmac-sha512(concatenated-string, {secret-key})
-    4. Set the hex string representation of the HMAC result to upper case, and use it as the signature hash in base64 encoding format.
-    5. Include Timestamp to header
-    6. Include Signature to header
-
-    ### Sample:
-    ### Example of message to be signed
-    > {"merchant_order_num":"LESTERCHAN-001","capture_after_hours":"0","route_indicator":"LinksMerchant","require_3ds":true,"payer":{"reference_id":"k11ir27iftfjescf4bhc18qpbdsv2dl7","name":"Lester Chan","email":"lester.chan@grab.com","phone":"+6598765432","billing_address":{"city":"Singapore","country":"Singapore","state":"Singapore","building_name":"Grab HQ","street":"Media Link","postal_code":"139305"},"shipping_address":{"city":"SG","country":"Singapore","state":"SG","building_name":"Marina One","street":"9 Straits View","postal_code":"018937"}},"statement_descriptor":"LINKS","cart":{"cart_total":"16.00","cart_tax":"3.00","cart_shipping_fee":"2.00","cart_items":[{"item_name":"lesterchan.net Square Sticker","item_quantity":1,"item_price":"6.00","item_image":"https://lesterchan.net/content/themes/lesterchan.net/img/avatars/100.jpg","item_option":"Transparent"},{"item_name":"lesterchan.net Rectangle Sticker","item_quantity":2,"item_price":"2.00","item_image":"https://lesterchan.net/content/themes/lesterchan/img/logos/logo-800x600.png","item_option":"Large"}],"cart_currency":"SGD","cart_discount":"0.00"},"hpp":{"return_url":"https://lesterchan.net/shop/success","cancel_url":"https://lesterchan.net/shop/cancellester.chan@grab.com","phone":"+6598765432","billing_address":{"city":"Singapore","country":"Singapore","state":"Singapore","building_name":"Grab HQ","street":"Media Link","postal_code":"139305"},"shipping_address":{"city":"SG","country":"Singapore","state":"SG","building_name":"Marina One","street":"9 Straits View","postal_code":"018937"}},"statement_descriptor":"LINKS","cart":{"cart_total":"16.00","cart_tax":"3.00","cart_shipping_fee":"2.00","cart_items":[{"item_name":"lesterchan.net Square Sticker","item_quantity":1,"item_price":"6.00","item_image":"https://lesterchan.net/content/themes/lesterchan.net/img/avatars/100.jpg","item_option":"Transparent"},{"item_name":"lesterchan.net Rectangle Sticker","item_quantity":2,"item_price":"2.00","item_image":"https://lesterchan.net/content/themes/lesterchan/img/logos/logo-800x600.png","item_option":"Large"}],"cart_currency":"SGD","cart_discount":"0.00"},"hpp":{"return_url":"https://lesterchan.net/shop/success","cancel_url":"https://lesterchan.net/shop/cancel","browser_info":{"ip":"127.0.0.1","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"}}}
-
-    ### Signature Calculation 
-    ```sh
-    $body = ... // 'refer to the sample message above'
-    $hash_secret = get_hash_secret() // 'example: 007d252f0d0e47f9965589b7f7d011ba'
-    $timestamp = get_timestamp() // 'example: 1620978893'
-    $concatenated_string = $body + ",t=" + $timestamp
-    $signature = hmac_sha512($concatenated_string, $hash_secret) // '10ecc1da78c0bed907b2c42f518c482bbe501c758955858adcb4c353ac1675ccc0bd32a84bae3db62757bb46e676a8ca25c3b0104ff086325f7e8a5d8e52a0ed'
-    $signature = upper_case($signature) // '10ECC1DA78C0BED907B2C42F518C482BBE501C758955858ADCB4C353AC1675CCC0BD32A84BAE3DB62757BB46E676A8CA25C3B0104FF086325F7E8A5D8E52A0ED'
-    $signature = base64_encode($signature) // 'MTBFQ0MxREE3OEMwQkVEOTA3QjJDNDJGNTE4QzQ4MkJCRTUwMUM3NTg5NTU4NThBRENCNEMzNTNBQzE2NzVDQ0MwQkQzMkE4NEJBRTNEQjYyNzU3QkI0NkU2NzZBOENBMjVDM0IwMTA0RkYwODYzMjVGN0U4QTVEOEU1MkEwRUQ=''
-    ```
+  description: Transaction Processing Services for supported payment methods
   contact:
     email: a@b.c
     name: Links Engineering
