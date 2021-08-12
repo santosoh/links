@@ -53,7 +53,9 @@ info:
   contact:
     email: a@b.c
     name: Links Engineering
-[]
+servers:
+  - url: localhost
+paths: {}
 components:
   schemas: {}
   securitySchemes:
