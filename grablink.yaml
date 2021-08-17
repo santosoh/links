@@ -2942,12 +2942,12 @@ components:
       type: apiKey
       in: header
 tags:
-  - name: Cancel
-  - name: Capture
-  - name: Order
-  - name: Payment Method
-  - name: Refund
   - name: Transaction
+  - name: Capture
+  - name: Refund
+  - name: Cancel
+  - name: Payment Method
+  - name: Order
   - name: Transaction Certificate
   - name: Callbacks
     x-displayName: Callbacks events
