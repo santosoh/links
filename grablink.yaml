@@ -463,6 +463,7 @@ paths:
         transactionCallback:
           'https://{webhook_endpoint}':
             post:
+              summary: Transaction Callback.
               description: An event triggered every time a Transaction is created.
               requestBody:
                 content:
