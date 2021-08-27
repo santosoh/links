@@ -54,7 +54,7 @@ info:
     email: grablink.engineering@grab.com
     name: GrabLink Engineering
   x-logo:
-    url: /grablink_logo.png
+    url: grablink_logo.png
     altText: Grablink logo
 servers:
   - url: 'https://links-checkout.stg-myteksi.com/api'
