@@ -4,10 +4,12 @@ info:
   version: '1.0'
   description: |
     # Introduction
-    ## About this API
+
+    ## About Grablink API
     Grablink REST API is developed to provide standard interface for merchant to accept payment from website or app. As some API may contain sensitive data in request/response message, merchant need to ensure that their environment is complied with PCI DSS security standard requirements before using those API.
 
     If merchant's environment is not complied with PCI DSS requirement, Hosted Payment Page API can be implemented instead, where consumer will be redirected to Grablink payment page to complete the transaction.
+
     ## Authentication
     Merchant would be assigned with API Key that would be required when consuming Grab Link API.
 
@@ -16,16 +18,20 @@ info:
     Most of Grab Link APIs are designed for server to server connection, therefore Private API Key should be used, kept private and not exposed to front end components such as website or app.
 
     Public API Key is used to call certain Grab Link API from front end, such as to obtain single-use token from merchant hosted payment page to be used in the subsequent transaction that follows.
+
     ## Idempotency
     Every API request from merchant to Grablink may contain Idempotency-Key in the header (except for HTTP GET request), and used to identify subsequent retries of the same request, ie. if a request is sent with same Idempotency-Key with same details, eg. amount, payment method, etc, Grablink will simply return previously completed response without performing any new action. Conversely, API request will return error If duplicate Idempotency-Key is sent with different details to prevent accidental usage.
 
     Idempotency-Key will be kept for 24 hours, and any request with the same Idempotency-Key beyond that time frame will be considered as a new request.
+
     ## Encryption
     Other than raw PAN, merchant may encrypt the card data before sending through API.
 
     Grablink will provides iOS and Android SDK to support merchant app to perform encryption, as well as web SDK to support merchant website.
+
     ## Webhook
     Merchant is able to set webhook endpoint for supported payment events on Grablink Merchant Portal, and the result of any API request will be posted to this endpoint. This is especially necessary when the customer is redirected to another website (eg. in the case of 3D Secure Authentication).
+
     ## Signature Hash
     Merchant need to calculate signature hash and include it in header, to ensure data integrity when consuming Grablink API. Each merchant will be assigned with a secret key, and this key would be used when generating HMAC signature.
 
@@ -4053,8 +4059,6 @@ tags:
   - name: Test Cards
     x-displayName: Test Cards
     description: |
-      ## Test Cards
-
       Following card details can be used to test your integration in staging environment:
 
       - 4xxx xxxx xxxx xxxx
