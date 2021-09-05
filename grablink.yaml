@@ -4047,6 +4047,15 @@ tags:
       Following request-body is send as POST request on the URL used to register the callback:
 
       <SchemaDefinition schemaRef="#/components/schemas/OrderEvent" />
+  - name: Test Cards
+    x-displayName: Test Cards
+    description: |
+      ## Test Cards
+
+      Following card details can be used to test your integration in staging environment:
+
+      - 4xxx xxxx xxxx xxxx
+      - 5xxx xxxx xxxx xxxx 
   - name: Result Codes
     x-displayName: Result Codes
     description: |
