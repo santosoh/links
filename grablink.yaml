@@ -4061,8 +4061,8 @@ tags:
     description: |
       Following card details can be used to test your integration in staging environment:
 
-      - 4xxx xxxx xxxx xxxx
-      - 5xxx xxxx xxxx xxxx 
+      - VISA: 4564610000000170 (Expiry Date: 12/2022 CVV: 123)
+      - MASTERCARD: 5206987603858993 (Expiry Date:12/2022 CVV: 123)
   - name: Result Codes
     x-displayName: Result Codes
     description: |
@@ -4075,85 +4075,6 @@ tags:
       - S0006 - Pending
       - S0007 - Authentication not supported
       - S0008 - Authentication finished
-      - V0001 - Not allowed
-      - V0002 - Invalid or empty request data
-      - V0003 - Request already processed
-      - V0004 - PaymentMethod not found
-      - V0005 - Invalid Authorisation Type supplied
-      - V0006 - MsgID length must be between 1 to 36
-      - V0007 - Invalid card number
-      - V0008 - Unable to determine variant
-      - V0009 - Invalid Idempotency-Key
-      - V0010 - Billing address problem
-      - V0011 - Invalid paRes from issuer
-      - V0012 - V0012
-      - V0013 - RouteIndicator alphanumeric underscore and max length is 16
-      - V0014 - StoreNum alphanumeric underscore hyphen and max length is 15
-      - V0015 - Token max length is 36
-      - V0016 - PayerReference alphanumeric underscore hyphen and max length is 64
-      - V0017 - VaultID is mandatory and max length is 36
-      - V0018 - This bank country is not supported
-      - V0019 - ChannelType must be either 'card', 'Alipay', 'Apple Pay','GrabPay', 'token'
-      - V0020 - Received an incorrect InvoiceLine
-      - V0021 - Metadata must be key: value
-      - V0022 - Invalid date of birth
-      - V0023 - DateTime must be a valid date format (YYYYMMDD+0800)
-      - V0024 - Invalid delivery address
-      - V0025 - PayerStatement max length is 64
-      - V0026 - CaptureAfterHours must be integer between 0 to 1800
-      - V0027 - ShopperReference is missing
-      - V0028 - GLTransID max length is 32
-      - V0029 - Contract must be either 'ONECLICK', 'RECURRING' or 'ONECLICK,RECURRING'
-      - V0030 - CardHolderName max length is 64
-      - V0031 - The transaction currency must be the same as the original transaction currency
-      - V0032 - Bank Account or Bank Location Id not valid or missing
-      - V0033 - Account holder missing
-      - V0034 - Card Holder Missing
-      - V0035 - Expiry Date Invalid
-      - V0037 - Billing address problem (City)
-      - V0038 - Capture or refund value cannot be more than authorise value
-      - V0039 - Invalid email
-      - V0040 - Billing address problem (Country)
-      - V0043 - Invalid amount specified
-      - V0044 - Unsupported currency specified
-      - V0047 - Invalid expiryMonth[1..12] / expiryYear[>2000]
-      - V0048 - Bank Name or Bank Location not valid or missing
-      - V0051 - Invalid issuer countrycode
-      - V0059 - Invalid CVC
-      - V0064 - Required field {0} not specified
-      - V0072 - Amount not allowed for this operation
-      - V0081 - Invalid shopperReference
-      - V0082 - Invalid shopperEmail
-      - V0089 - Invalid pspEchoData
-      - V0090 - Invalid shopperStatement
-      - V0091 - Invalid shopper IP
-      - V0092 - No params specified
-      - V0093 - Invalid field {%s}
-      - V0100 - Invalid country code
-      - V0102 - Invalid signature
-      - V0103 - Invalid merchant transaction ID
-      - V0104 - Original transaction not exist
-      - V0105 - Invalid store number
-      - V0106 - Original transaction is %s
-      - V0107 - Missing psp token
-      - V0108 - Customer Cancellation
-      - V0109 - Customer Dispute
-      - V0110 - No CREDIT Account
-      - V0111 - Requested Function not Supported
-      - V0112 - mpiImplementationType max length is 20
-      - V0113 - riskProfileID max length is 20
-      - V0114 - executeThreeD must be either 'true' or 'false'
-      - V0115 - userAgent max length is 256
-      - V0116 - acceptHeader max length is 100
-      - V0117 - returnUrl max length is 300
-      - V0118 - platform max length is 10
-      - V0119 - spec max length is 30
-      - V0120 - AppVersion max length is 20
-      - V0121 - ShopperInteraction value must be either 'Ecommerce' or 'ContAuth'
-      - V0122 - CreatedBy max length is 100
-      - V0123 - PostalCode max length is 8
-      - V0124 - invalid merchantOrderNum max length is 120 and only allow alphanumeric underscore, space and hyphen
-      - V0125 - invalid initiatingReason max length is 120 and only allow alphanumeric underscore, space and hyphen
       - G0001 - Unknown
       - G0002 - Internal error
       - G0003 - Unable To Process
@@ -4163,20 +4084,6 @@ tags:
       - G0010 - Problem parsing request
       - G0011 - Timeout
       - G0012 - MerchantTransID should be unique
-      - C0001 - Invalid Merchant Account
-      - C0002 - Invalid AcquirerAccount
-      - C0003 - Routing Engine Reject
-      - C0004 - Invalid psp name
-      - C0005 - Configuration Error (apiKey)
-      - C0008 - Configuration Error (currencyCode)
-      - C0009 - Configuration Error (terminalId)
-      - C0011 - Configuration Error (password)
-      - C0020 - No router policy
-      - C0021 - Invalid psp account
-      - C0022 - Acquirer status is unavailable
-      - C0023 - Store status is unavailable
-      - C0024 - Merchant status is unavailable
-      - C0025 - 
       - E0096 - System Error
       - E1001 - 3d-secure: Authentication failed
       - E0001 - Refer to card issuer
@@ -4273,9 +4180,11 @@ tags:
       - E10P1 - Over Daily Limit
       - E10P9 - Limit exceeded. Enter a lesser value.
       - E10S4 - PTLF Full
-      - P0001 - PSP generic error
-      - P0002 - PSP config error
-      - P0003 - PSP internal error
-      - P0004 - PSP fraud error
-      - P0005 - PSP transaction not supported
-      - P0006 - PSP transaction not found
+      - P0001 - Generic error
+      - P0002 - Config error
+      - P0003 - Internal error
+      - P0004 - Fraud error
+      - P0005 - Transaction not supported
+      - P0006 - Transaction not found
+      - Vxxx - Validation error. Please refer to Result Message for more details.
+      - Cxxx - Configuration error. Please refer to Result Message for more details.
