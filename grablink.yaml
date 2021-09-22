@@ -320,7 +320,7 @@ paths:
                 - amount
                 - payment_method
             examples:
-              'Example: Manual Capture':
+              Manual Capture:
                 value:
                   merchant_action_id: 68420ccc49b54d09ba8665419460aa66
                   merchant_order_num: '211225.123456'
@@ -334,7 +334,7 @@ paths:
                       expiry_year: '2022'
                       cvc: '123'
                       holder_name: John Doe
-              'Example: Immediate Capture':
+              Immediate Capture:
                 value:
                   merchant_action_id: 8789089ac14e4a329acc839866c29164
                   merchant_order_num: '211225.123456'
@@ -360,7 +360,7 @@ paths:
                       create_token: true
                   metadata:
                     key: value
-              'Example: Payment Token':
+              Payment Token:
                 value:
                   merchant_action_id: 7011801cdc014a968d3ddf88d4c952ca
                   merchant_order_num: '211225.123456'
@@ -376,7 +376,7 @@ paths:
                   payment_method:
                     token:
                       token_id: pmt_1e83f2f2eb3d6b69c6834a99cd3079af
-              'Example: PayFac':
+              PayFac:
                 value:
                   merchant_action_id: 4126b06e89364eb6b110211e0e2b9e10
                   merchant_order_num: '211225.123456'
@@ -576,7 +576,7 @@ paths:
 
                                 The value of this field is used by 3DS2 SDK to perform ACS challenge.
               examples:
-                'Example: Status: refunded':
+                'Status: refunded':
                   value:
                     trans_id: '2109220518560101854303'
                     merchant_order_num: '211225.123456'
@@ -651,7 +651,7 @@ paths:
                           code: S0000
                           message: Success
                           raw_message: Request successful
-                'Example: Status: captured':
+                'Status: captured':
                   value:
                     trans_id: '2109220541420101854734'
                     merchant_order_num: '211225.123456'
@@ -703,7 +703,7 @@ paths:
                           code: S0000
                           message: Success
                           raw_message: Request successful
-                'Example: Status: authorised':
+                'Status: authorised':
                   value:
                     trans_id: '2109220542260101854738'
                     merchant_order_num: '211225.123456'
@@ -740,7 +740,7 @@ paths:
                           code: S0000
                           message: Success
                           raw_message: Request successful
-                'Example: Status: partial refunded':
+                'Status: partial refunded':
                   value:
                     trans_id: '2109220543080101854777'
                     merchant_order_num: '211225.123456'
@@ -947,7 +947,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModificationResponse'
               examples:
-                'Example: Partial Refund':
+                Partial Refund:
                   value:
                     action_time: '2021-09-22T05:37:28+00:00'
                     action_id: '2109220537240101854654'
@@ -960,7 +960,7 @@ paths:
                       code: S0000
                       message: Success
                       raw_message: Request successful
-                'Example: Full Refund':
+                Full Refund:
                   value:
                     action_time: '2021-09-22T05:39:14+00:00'
                     action_id: '2109220539100101854695'
@@ -1019,14 +1019,14 @@ paths:
                 - initiating_reason
                 - amount
             examples:
-              'Example: Partial Refund':
+              Partial Refund:
                 value:
                   merchant_action_id: f3cc3057cc184e1d8e780b6e4f5193cc
                   amount:
                     currency: SGD
                     value: '30.00'
                   initiating_reason: No stock
-              'Example: Full Refund':
+              Full Refund:
                 value:
                   merchant_action_id: ac1ed0538b9248429381a2ef8f71702a
                   amount:
