@@ -3393,85 +3393,81 @@ components:
         - $ref: '#/components/schemas/WebhookRequest'
         - $ref: '#/components/schemas/WebhookRequestAdditional'
       example:
-        value:
-          action_time: '2021-09-22T05:19:02Z'
-          merchant_action_id: 68420ccc49b54d09ba8665419460aa66
-          amount:
-            currency: SGD
-            value: '100.00'
-          result:
-            code: S0000
-            message: Success
-            raw_message: Request successful
-          event_type: transaction.success
-          status: succeeded
-          action_id: '2109220545040101854821'
-          merchant_order_num: '211225.123456'
-          trans_id: '2109220518560101854303'
-          auth_code: '007999'
-          cvc_result: 1 Matches
-          acquirer_reference: '000000345244'
-          payment_method:
-            card:
-              brand: mc
-              bin: '520698'
-              trailing_number: '8993'
-              funding_type: DEBIT
-              variant: consumer
-              issuing_country: MX
-              issuing_bank: 'Banco Nacional de Mexico, S.A.'
-            fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+        action_time: '2021-09-22T05:19:02Z'
+        merchant_action_id: 68420ccc49b54d09ba8665419460aa66
+        amount:
+          currency: SGD
+          value: '100.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: transaction.success
+        status: succeeded
+        action_id: '2109220545040101854821'
+        merchant_order_num: '211225.123456'
+        trans_id: '2109220518560101854303'
+        auth_code: '007999'
+        cvc_result: 1 Matches
+        acquirer_reference: '000000345244'
+        payment_method:
+          card:
+            brand: mc
+            bin: '520698'
+            trailing_number: '8993'
+            funding_type: DEBIT
+            variant: consumer
+            issuing_country: MX
+            issuing_bank: 'Banco Nacional de Mexico, S.A.'
+          fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
     CaptureEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
       example:
-        value:
-          action_time: '2021-09-22T05:34:59+00:00'
-          merchant_action_id: 9a4b7c8e833c47e4ba91a5ff03bda4a1
-          amount:
-            currency: SGD
-            value: '100.00'
-          result:
-            code: S0000
-            message: Success
-            raw_message: Request successful
-          event_type: capture.success
-          status: succeeded
-          action_id: '2109220534580101854616'
+        action_time: '2021-09-22T05:34:59+00:00'
+        merchant_action_id: 9a4b7c8e833c47e4ba91a5ff03bda4a1
+        amount:
+          currency: SGD
+          value: '100.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: capture.success
+        status: succeeded
+        action_id: '2109220534580101854616'
     RefundEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
       example:
-        value:
-          action_time: '2021-09-22T05:39:14+00:00'
-          merchant_action_id: ac1ed0538b9248429381a2ef8f71702a
-          amount:
-            currency: SGD
-            value: '70.00'
-          result:
-            code: S0000
-            message: Success
-            raw_message: Request successful
-          event_type: refund.success
-          status: succeeded
-          action_id: '2109220539100101854695'
+        action_time: '2021-09-22T05:39:14+00:00'
+        merchant_action_id: ac1ed0538b9248429381a2ef8f71702a
+        amount:
+          currency: SGD
+          value: '70.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: refund.success
+        status: succeeded
+        action_id: '2109220539100101854695'
     CancelEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
       example:
-        value:
-          action_time: '2021-09-22T05:27:13+00:00'
-          merchant_action_id: c1adb79775db477196103d87b2ad6e0c
-          amount:
-            currency: SGD
-            value: '100.00'
-          result:
-            code: S0000
-            message: Success
-            raw_message: Request successful
-          event_type: cancel.success
-          status: succeeded
-          action_id: '2109220527070101854463'
+        action_time: '2021-09-22T05:27:13+00:00'
+        merchant_action_id: c1adb79775db477196103d87b2ad6e0c
+        amount:
+          currency: SGD
+          value: '100.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: cancel.success
+        status: succeeded
+        action_id: '2109220527070101854463'
     PaymentMethodEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
