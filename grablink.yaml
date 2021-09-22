@@ -3317,7 +3317,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
         - $ref: '#/components/schemas/WebhookRequestAdditional'
-      x-examples:
+      examples:
         example:
           value:
             action_time: '2021-09-22T05:19:02Z'
@@ -3350,7 +3350,7 @@ components:
     CaptureEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
-      x-examples:
+      examples:
         example:
           value:
             action_time: '2021-09-22T05:34:59+00:00'
@@ -3368,7 +3368,7 @@ components:
     RefundEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
-      x-examples:
+      examples:
         example:
           value:
             action_time: '2021-09-22T05:39:14+00:00'
@@ -3386,7 +3386,7 @@ components:
     CancelEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
-      x-examples:
+      examples:
         example:
           value:
             action_time: '2021-09-22T05:27:13+00:00'
