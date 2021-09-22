@@ -1687,7 +1687,7 @@ paths:
                     merchant_order_num: '211225.123456'
                     status: created
                     payer:
-                      reference_id: ih67ng5xy4emuvueti7hy61imelbr582
+                      reference_id: john.doe@grab.com
                     cart:
                       cart_currency: SGD
                       cart_total: '13.00'
@@ -1867,7 +1867,7 @@ paths:
                     cart_currency: SGD
                     cart_total: '13.00'
                   payer:
-                    email: john.doe@example.com
+                    email: john.doe@grab.com
                     phone: '+6598765432'
                     shipping_address:
                       building_name: Marina One
@@ -1884,7 +1884,7 @@ paths:
                       street: Media Link
                       postal_code: '139305'
                     name: John Joe
-                    reference_id: ih67ng5xy4emuvueti7hy61imelbr582
+                    reference_id: john.doe@grab.com
         description: ''
       callbacks:
         orderCallback:
@@ -3401,44 +3401,43 @@ components:
       allOf:
         - $ref: '#/components/schemas/OrderResult'
       example:
-        value:
-          order:
-            order_id: 1020c4a4bb8f4bdba76bcf5b71614eba
-            merchant_order_num: '211225.123456'
-            created_at: '2021-09-22T09:50:59+00:00'
-            status: success
-            payer:
-              reference_id: ih67ng5xy4emuvueti7hy61imelbr582
-            cart:
-              cart_currency: SGD
-              cart_total: '13.00'
-          transaction:
-            trans_id: '2109220952370101974135'
-            action_time: '2021-09-22T09:52:37+00:00'
-            merchant_action_id: 9f5e18984ec44d55b7dee32f418e9057
-            amount:
-              currency: SGD
-              value: '13.00'
-            result:
-              code: S0000
-              message: Success
-              raw_message: Success
-            auth_code: '009837'
-            cvc_result: 1 Matches
-            acquirer_reference: '000000375523'
-            payer:
-              reference_id: ih67ng5xy4emuvueti7hy61imelbr582
-            payment_method:
-              card:
-                brand: mc
-                bin: '520698'
-                trailing_number: '8993'
-                funding_type: DEBIT
-                variant: Debit MasterCard
-                issuing_country: MX
-                issuing_bank: 'Banco Nacional de Mexico, S.A.'
-              fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
-            status: succeeded
+        order:
+          order_id: 1020c4a4bb8f4bdba76bcf5b71614eba
+          merchant_order_num: '211225.123456'
+          created_at: '2021-09-22T09:50:59+00:00'
+          status: success
+          payer:
+            reference_id: john.doe@grab.com
+          cart:
+            cart_currency: SGD
+            cart_total: '13.00'
+        transaction:
+          trans_id: '2109220952370101974135'
+          action_time: '2021-09-22T09:52:37+00:00'
+          merchant_action_id: 9f5e18984ec44d55b7dee32f418e9057
+          amount:
+            currency: SGD
+            value: '13.00'
+          result:
+            code: S0000
+            message: Success
+            raw_message: Success
+          auth_code: '009837'
+          cvc_result: 1 Matches
+          acquirer_reference: '000000375523'
+          payer:
+            reference_id: john.doe@grab.com
+          payment_method:
+            card:
+              brand: mc
+              bin: '520698'
+              trailing_number: '8993'
+              funding_type: DEBIT
+              variant: Debit MasterCard
+              issuing_country: MX
+              issuing_bank: 'Banco Nacional de Mexico, S.A.'
+            fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+          status: succeeded
     TerminalBatchSummary:
       type: object
       properties:
