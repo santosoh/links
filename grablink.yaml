@@ -919,21 +919,6 @@ paths:
                   application/json:
                     schema:
                       $ref: '#/components/schemas/CaptureEvent'
-                    examples:
-                      example:
-                        value:
-                          action_time: '2021-09-22T05:34:59+00:00'
-                          merchant_action_id: 9a4b7c8e833c47e4ba91a5ff03bda4a1
-                          amount:
-                            currency: SGD
-                            value: '100.00'
-                          result:
-                            code: S0000
-                            message: Success
-                            raw_message: Request successful
-                          event_type: capture.success
-                          status: succeeded
-                          action_id: '2109220534580101854616'
               responses:
                 '200':
                   description: OK
@@ -1060,21 +1045,6 @@ paths:
                   application/json:
                     schema:
                       $ref: '#/components/schemas/RefundEvent'
-                    examples:
-                      example:
-                        value:
-                          action_time: '2021-09-22T05:39:14+00:00'
-                          merchant_action_id: ac1ed0538b9248429381a2ef8f71702a
-                          amount:
-                            currency: SGD
-                            value: '70.00'
-                          result:
-                            code: S0000
-                            message: Success
-                            raw_message: Request successful
-                          event_type: refund.success
-                          status: succeeded
-                          action_id: '2109220539100101854695'
               responses:
                 '200':
                   description: OK
@@ -1175,21 +1145,6 @@ paths:
                   application/json:
                     schema:
                       $ref: '#/components/schemas/CancelEvent'
-                    examples:
-                      example:
-                        value:
-                          action_time: '2021-09-22T05:27:13+00:00'
-                          merchant_action_id: c1adb79775db477196103d87b2ad6e0c
-                          amount:
-                            currency: SGD
-                            value: '100.00'
-                          result:
-                            code: S0000
-                            message: Success
-                            raw_message: Request successful
-                          event_type: cancel.success
-                          status: succeeded
-                          action_id: '2109220527070101854463'
               responses:
                 '200':
                   description: OK
