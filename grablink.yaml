@@ -1683,17 +1683,16 @@ paths:
               examples:
                 example:
                   value:
-                    order_id: 1020c4a4bb8f4bdba76bcf5b71614eba
-                    merchant_order_num: SW21081200002313
-                    status: unknown
+                    order_id: 8cff9f16bc2b4e5da50624df3a9243be
+                    merchant_order_num: '211225.123456'
+                    status: created
                     payer:
-                      reference_id: ef1d808f-894b-44c1-9697-cf994993b913
+                      reference_id: ih67ng5xy4emuvueti7hy61imelbr582
                     cart:
                       cart_currency: SGD
-                      cart_total: '150.00'
+                      cart_total: '13.00'
                     hpp:
-                      redirect_url: 'http://example.com'
-                    metadata: {}
+                      redirect_url: 'https://links-checkout.stg-myteksi.com/pay/bca1cc50d972461886ce6b6d950375ef'
         '400':
           description: Bad Request
           content:
@@ -1841,50 +1840,51 @@ paths:
             examples:
               example:
                 value:
-                  merchant_order_num: SW21081200002313
-                  route_indicator: ''
+                  merchant_order_num: '211225.123456'
                   require_3ds: true
-                  payer:
-                    reference_id: ef1d808f-894b-44c1-9697-cf994993b913
-                    name: John Doe
-                    email: john.doe@example.com
-                    phone: '12345678'
-                    billing_address:
-                      city: Singapore
-                      country: SG
-                      state: Singapore
-                      building_name: Marina One
-                      street: 7 Straits View
-                      postal_code: '018936'
-                    shipping_address:
-                      city: Singapore
-                      country: SG
-                      state: Singapore
-                      building_name: Marina One
-                      street: 7 Straits View
-                      postal_code: '018936'
-                  statement_descriptor: INV000214312
-                  cart:
-                    cart_currency: SGD
-                    cart_total: '150.00'
-                    cart_subtotal: '137.00'
-                    cart_discount: '0.00'
-                    cart_tax: '0.00'
-                    cart_shipping_fee: '10.00'
-                    cart_admin_fee: '3.00'
-                    cart_items:
-                      - item_name: Apple iPhone SE
-                        item_quantity: 1
-                        item_price: '137.00'
-                        item_image: 'http://example.com'
-                        item_option: White; 256gb
                   hpp:
-                    return_url: 'http://example.com'
-                    cancel_url: 'http://example.com'
+                    return_url: 'https://example.com/order/success'
+                    cancel_url: 'https://example.com/order/cancel'
                     browser_info:
-                      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
-                      ip: 202.123.100.11
-                  metadata: {}
+                      ip: 127.0.0.1
+                      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36'
+                  statement_descriptor: '211225.123456'
+                  cart:
+                    cart_shipping_fee: '2.00'
+                    cart_tax: '3.00'
+                    cart_items:
+                      - item_price: '6.00'
+                        item_quantity: 1
+                        item_image: 'https://example.com/sticker_pack.png'
+                        item_name: Example Sticker Pack
+                        item_option: Transparent
+                      - item_price: '2.00'
+                        item_quantity: 2
+                        item_image: 'https://example.com/sticker_large.png'
+                        item_name: Example Large Sticker
+                        item_option: Large
+                    cart_discount: '0.00'
+                    cart_currency: SGD
+                    cart_total: '13.00'
+                  payer:
+                    email: john.doe@example.com
+                    phone: '+6598765432'
+                    shipping_address:
+                      building_name: Marina One
+                      country: SG
+                      state: SG
+                      city: SG
+                      street: 7 Straits View
+                      postal_code: '018936'
+                    billing_address:
+                      building_name: Grab HQ
+                      country: SG
+                      state: Singapore
+                      city: Singapore
+                      street: Media Link
+                      postal_code: '139305'
+                    name: John Joe
+                    reference_id: ih67ng5xy4emuvueti7hy61imelbr582
         description: ''
       callbacks:
         orderCallback:
@@ -3400,6 +3400,45 @@ components:
     OrderEvent:
       allOf:
         - $ref: '#/components/schemas/OrderResult'
+      example:
+        value:
+          order:
+            order_id: 1020c4a4bb8f4bdba76bcf5b71614eba
+            merchant_order_num: '211225.123456'
+            created_at: '2021-09-22T09:50:59+00:00'
+            status: success
+            payer:
+              reference_id: ih67ng5xy4emuvueti7hy61imelbr582
+            cart:
+              cart_currency: SGD
+              cart_total: '13.00'
+          transaction:
+            trans_id: '2109220952370101974135'
+            action_time: '2021-09-22T09:52:37+00:00'
+            merchant_action_id: 9f5e18984ec44d55b7dee32f418e9057
+            amount:
+              currency: SGD
+              value: '13.00'
+            result:
+              code: S0000
+              message: Success
+              raw_message: Success
+            auth_code: '009837'
+            cvc_result: 1 Matches
+            acquirer_reference: '000000375523'
+            payer:
+              reference_id: ih67ng5xy4emuvueti7hy61imelbr582
+            payment_method:
+              card:
+                brand: mc
+                bin: '520698'
+                trailing_number: '8993'
+                funding_type: DEBIT
+                variant: Debit MasterCard
+                issuing_country: MX
+                issuing_bank: 'Banco Nacional de Mexico, S.A.'
+              fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+            status: succeeded
     TerminalBatchSummary:
       type: object
       properties:
