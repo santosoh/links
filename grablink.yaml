@@ -3098,7 +3098,6 @@ tags:
   - name: Capture
   - name: Refund
   - name: Cancel
-  - name: Payment Method
   - name: Hosted Payment Page
   - name: Terminal
   - name: Webhooks
