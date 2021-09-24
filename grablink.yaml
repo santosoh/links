@@ -3,7 +3,7 @@ info:
   title: GrabLink API
   version: 1.0.0
   description: |
-    # Introduction
+    # Introduction 
 
     ## About GrabLink API
     GrabLink REST API is developed to provide standard interface for merchant to accept payment from website or app. As some API may contain sensitive data in request/response message, merchant need to ensure that their environment is complied with PCI DSS security standard requirements before using those API.
