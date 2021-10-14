@@ -1475,7 +1475,7 @@ paths:
                         batch_id:
                           type: string
                           description: Batch ID of the requested batch summary
-                          example: a13064cf9b0c40e5a7633e41d6c6ab35
+                          example: '0012'
                         count:
                           type: integer
                           description: Total count of transactions in the batch
@@ -1561,6 +1561,7 @@ paths:
         description: Terminal ID
       - schema:
           type: string
+          example: '0012'
         name: batch_id
         in: path
         required: true
@@ -1576,6 +1577,7 @@ paths:
         description: Terminal ID
       - schema:
           type: string
+          example: '0012'
         name: batch_id
         in: path
         required: true
@@ -1603,7 +1605,7 @@ paths:
                   batch_id:
                     type: string
                     description: Batch ID of the requested batch details.
-                    example: a13064cf9b0c40e5a7633e41d6c6ab35
+                    example: '0012'
                   trans_logs:
                     type: array
                     items:
@@ -1689,7 +1691,7 @@ paths:
         description: Terminal ID
       - schema:
           type: string
-          example: a13064cf9b0c40e5a7633e41d6c6ab35
+          example: '0012'
         name: batch_id
         in: path
         required: true
@@ -2954,7 +2956,7 @@ components:
         batch_id:
           type: string
           description: Batch ID of the requested batch summary
-          example: a13064cf9b0c40e5a7633e41d6c6ab35
+          example: '0012'
         count:
           type: integer
           description: Total count of transactions in the batch
