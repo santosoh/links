@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: |
     # Introduction
- 
+
     ## About GrabLink API
     GrabLink REST API is developed to provide standard interface for merchant to accept payment from website or app. As some API may contain sensitive data in request/response message, merchant need to ensure that their environment is complied with PCI DSS security standard requirements before using those API.
 
@@ -1532,7 +1532,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TerminalBatchSummary'
-              examples: {}
         '400':
           description: Bad Request
           content:
@@ -1648,7 +1647,6 @@ paths:
                     enum:
                       - open
                       - closed
-              examples: {}
         '400':
           description: Bad Request
           content:
@@ -1706,7 +1704,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TerminalBatchClosing'
-              examples: {}
         '400':
           description: Bad Request
           content:
@@ -2945,7 +2942,6 @@ components:
           status: succeeded
     TerminalBatchSummary:
       type: object
-      x-examples: {}
       properties:
         terminal_data:
           $ref: '#/components/schemas/TerminalData'
