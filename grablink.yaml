@@ -1215,7 +1215,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       description: |-
-        ## This API is currently still under development
+        ### *This API is currently still under development*
 
         Search a transaction from the same company based on certain search criteria
       parameters:
