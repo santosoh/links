@@ -3064,21 +3064,24 @@ components:
               auth_count:
                 type: integer
                 description: Total count of immediately captured authorisation eligible for batch closing
-                example: 9
+                example: 0
               auth_amount:
                 type: string
+                example: '0.00'
               capture_count:
                 type: integer
                 description: Total count of manual capture eligible for batch closing
-                example: 1
+                example: 8
               capture_amount:
                 type: string
+                example: '160.00'
               refund_count:
                 type: integer
                 description: Total count of refund eligible for batch closing
                 example: 2
               refund_amount:
                 type: string
+                example: '10.00'
         status:
           type: string
           description: 'Batch status: open/closed'
