@@ -1475,7 +1475,7 @@ paths:
                         batch_id:
                           type: string
                           description: Batch ID of the requested batch summary
-                          example: '0012'
+                          example: '12'
                         count:
                           type: integer
                           description: Total count of transactions in the batch
@@ -1505,8 +1505,8 @@ paths:
       description: Retrieve List of Batch API returns list of batch from specified terminal ID
       parameters:
         - schema:
-            type: integer
-            example: 1
+            type: string
+            example: '2019-09-26T07:58:30.996+0200'
           in: query
           name: starting_after
           description: 'ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200"). Retrieve Batch Details API will return the data after this cursor time by DESC'
@@ -1561,7 +1561,7 @@ paths:
         description: Terminal ID
       - schema:
           type: string
-          example: '0012'
+          example: '12'
         name: batch_id
         in: path
         required: true
@@ -1577,7 +1577,7 @@ paths:
         description: Terminal ID
       - schema:
           type: string
-          example: '0012'
+          example: '12'
         name: batch_id
         in: path
         required: true
@@ -1605,7 +1605,7 @@ paths:
                   batch_id:
                     type: string
                     description: Batch ID of the requested batch details.
-                    example: '0012'
+                    example: '12'
                   trans_logs:
                     type: array
                     items:
@@ -1665,8 +1665,8 @@ paths:
       description: Retrieve Batch Details API returns all types of transactions performed from specified batch ID
       parameters:
         - schema:
-            type: integer
-            example: 1
+            type: string
+            example: '2019-09-26T07:58:30.996+0200'
           in: query
           name: starting_after
           description: 'ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200"). Retrieve Batch Details API will return the data after this cursor time by DESC'
@@ -1691,7 +1691,7 @@ paths:
         description: Terminal ID
       - schema:
           type: string
-          example: '0012'
+          example: '12'
         name: batch_id
         in: path
         required: true
@@ -2956,7 +2956,7 @@ components:
         batch_id:
           type: string
           description: Batch ID of the requested batch summary
-          example: '0012'
+          example: '12'
         count:
           type: integer
           description: Total count of transactions in the batch
