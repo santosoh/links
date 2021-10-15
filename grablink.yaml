@@ -1150,7 +1150,7 @@ paths:
   /v1/transaction/search:
     parameters: []
     post:
-      summary: Transaction Search
+      summary: Search
       operationId: post-v1-transaction-search
       responses:
         '200':
