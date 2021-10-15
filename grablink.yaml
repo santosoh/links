@@ -1150,7 +1150,7 @@ paths:
   /v1/transaction/search:
     parameters: []
     post:
-      summary: Search
+      summary: Search (Coming Soon)
       operationId: post-v1-transaction-search
       responses:
         '200':
@@ -1214,10 +1214,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      description: |-
-        ### *This API is currently still under development*
-
-        Search a transaction from the same company based on certain search criteria
+      description: Search a transaction from the same company based on certain search criteria
       parameters:
         - $ref: '#/components/parameters/Content-Type'
         - $ref: '#/components/parameters/Signature'
