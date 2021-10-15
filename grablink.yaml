@@ -1628,7 +1628,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TerminalBatchSummary'
-              examples: {}
         '400':
           description: Bad Request
           content:
@@ -1793,7 +1792,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TerminalBatchClosing'
-              examples: {}
         '400':
           description: Bad Request
           content:
