@@ -1214,7 +1214,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      description: Search a transaction from the same company based on certain search criteria
+      description: |-
+        ## This API is currently still under development
+
+        Search a transaction from the same company based on certain search criteria
       parameters:
         - $ref: '#/components/parameters/Content-Type'
         - $ref: '#/components/parameters/Signature'
