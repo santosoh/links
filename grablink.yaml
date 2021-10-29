@@ -219,8 +219,6 @@ paths:
                     result:
                       code: S0005
                       message: RedirectShopper
-                    three_ds:
-                      redirection_url: 'https://links-checkout.stg-myteksi.com/api/3ds/2110250538460100030091'
                     payer:
                       reference_id: john.doe@grab.com
                     payment_method:
@@ -236,6 +234,9 @@ paths:
                         token_id: pmt_7c6938f66437f1bb694d6191a48dc48e
                       fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
                     status: action required
+                    next_action:
+                      type: redirection_url
+                      redirection_url: 'https://links-checkout.stg-myteksi.com/api/3ds/2110250538460100030091'
                     metadata:
                       key: value
         '400':
