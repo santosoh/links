@@ -1,0 +1,3442 @@
+openapi: 3.0.0
+info:
+  title: GrabLink API
+  version: 1.0.0
+  description: |
+    # Introduction
+
+    ## About GrabLink API
+    GrabLink REST API is developed to provide standard interface for merchant to accept payment from website or app. As some API may contain sensitive data in request/response message, merchant need to ensure that their environment is complied with PCI DSS security standard requirements before using those API.
+
+    If merchant's environment is not complied with PCI DSS requirement, Hosted Payment Page API can be implemented instead, where consumer will be redirected to GrabLink payment page to complete the transaction.
+
+    ## Authentication
+    Merchant would be assigned with API Key that would be required when consuming GrabLink API.
+
+    GrabLink APIs are designed for server to server connection, therefore API Key should be kept private and not exposed to front end components such as website or app.
+
+    ## Idempotency
+    Every API request from merchant to GrabLink may contain Idempotency-Key in the header (except for HTTP GET request), and used to identify subsequent retries of the same request, ie. if a request is sent with same Idempotency-Key with same details, eg. amount, payment method, etc, GrabLink will simply return previously completed response without performing any new action. Conversely, API request will return error If duplicate Idempotency-Key is sent with different details to prevent accidental usage.
+
+    Idempotency-Key will be kept for 24 hours, and any request with the same Idempotency-Key beyond that time frame will be considered as a new request.
+
+    ## Encryption
+    Other than raw PAN, merchant may encrypt the card data before sending through API. 
+
+    GrabLink will provides iOS and Android SDK, along with merchant's specific public key, to support merchant app to perform encryption, as well as web SDK to support merchant website.
+
+    Since merchant will not have the private key to decrypt the card data, the encryption can be used to reduce the scope of PCI DSS requirement of the merchant. Please consult with your PCI DSS auditor before implementing this.
+
+    ## Webhook
+    Merchant is able to set webhook endpoint for supported payment events on GrabLink Merchant Portal, and the result of any API request will be posted to this endpoint. This is especially necessary when the customer is redirected to another website (eg. in the case of 3D Secure Authentication).
+
+    ## Default Return URL
+    Merchant is able to set a default Return URL on Grab Link Merchant Portal, and it will be used in case the return_url is not provided in the API request and there is a need to redirect the end user to another page to complete the payment, for example: 2FA authentication page from Issuer. Please note that return_url in the API request, precedes the default Return URL; and when default Return URL is used, Grab Link's trans_id will be provided as reference.
+
+    ## Signature Hash
+    Merchant need to calculate signature hash and include it in header, to ensure data integrity when consuming GrabLink API. Each merchant will be assigned with a secret key, and this key would be used when generating HMAC signature.
+
+    ### Step to generate HMAC signature:
+    1. Generate timestamp (unix timestamp)
+    2. Concatenate request-body with timestamp in the following format:
+    concatenated-string = {request-body} + ",t={timestamp}"
+    3. Calculate HMAC using SHA512 hashing
+    signature-hash = hmac-sha512(concatenated-string, {secret-key})
+    4. Set the hex string representation of the HMAC result to upper case, and use it as the signature hash in base64 encoding format.
+    5. Include Timestamp to header
+    6. Include Signature to header
+
+    ### Sample:
+    ### Example of message to be signed
+    ```json
+    {"merchant_order_num":"LESTERCHAN-001","capture_after_hours":"0","route_indicator":"LinksMerchant","require_3ds":true,"payer":{"reference_id":"k11ir27iftfjescf4bhc18qpbdsv2dl7","name":"Lester Chan","email":"lester.chan@grab.com","phone":"+6598765432","billing_address":{"city":"Singapore","country":"Singapore","state":"Singapore","building_name":"Grab HQ","street":"Media Link","postal_code":"139305"},"shipping_address":{"city":"SG","country":"Singapore","state":"SG","building_name":"Marina One","street":"9 Straits View","postal_code":"018937"}},"statement_descriptor":"LINKS","cart":{"cart_total":"16.00","cart_tax":"3.00","cart_shipping_fee":"2.00","cart_items":[{"item_name":"lesterchan.net Square Sticker","item_quantity":1,"item_price":"6.00","item_image":"https://lesterchan.net/content/themes/lesterchan.net/img/avatars/100.jpg","item_option":"Transparent"},{"item_name":"lesterchan.net Rectangle Sticker","item_quantity":2,"item_price":"2.00","item_image":"https://lesterchan.net/content/themes/lesterchan/img/logos/logo-800x600.png","item_option":"Large"}],"cart_currency":"SGD","cart_discount":"0.00"},"hpp":{"return_url":"https://lesterchan.net/shop/success","cancel_url":"https://lesterchan.net/shop/cancellester.chan@grab.com","phone":"+6598765432","billing_address":{"city":"Singapore","country":"Singapore","state":"Singapore","building_name":"Grab HQ","street":"Media Link","postal_code":"139305"},"shipping_address":{"city":"SG","country":"Singapore","state":"SG","building_name":"Marina One","street":"9 Straits View","postal_code":"018937"}},"statement_descriptor":"LINKS","cart":{"cart_total":"16.00","cart_tax":"3.00","cart_shipping_fee":"2.00","cart_items":[{"item_name":"lesterchan.net Square Sticker","item_quantity":1,"item_price":"6.00","item_image":"https://lesterchan.net/content/themes/lesterchan.net/img/avatars/100.jpg","item_option":"Transparent"},{"item_name":"lesterchan.net Rectangle Sticker","item_quantity":2,"item_price":"2.00","item_image":"https://lesterchan.net/content/themes/lesterchan/img/logos/logo-800x600.png","item_option":"Large"}],"cart_currency":"SGD","cart_discount":"0.00"},"hpp":{"return_url":"https://lesterchan.net/shop/success","cancel_url":"https://lesterchan.net/shop/cancel","browser_info":{"ip":"127.0.0.1","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"}}}
+    ```
+
+    ### Signature Calculation
+    ```sh
+    $body = ... // 'refer to the sample message above'
+    $hash_secret = get_hash_secret() // 'example: 007d252f0d0e47f9965589b7f7d011ba'
+    $timestamp = get_timestamp() // 'example: 1620978893'
+    $concatenated_string = $body + ",t=" + $timestamp
+    $signature = hmac_sha512($concatenated_string, $hash_secret) // '10ecc1da78c0bed907b2c42f518c482bbe501c758955858adcb4c353ac1675ccc0bd32a84bae3db62757bb46e676a8ca25c3b0104ff086325f7e8a5d8e52a0ed'
+    $signature = upper_case($signature) // '10ECC1DA78C0BED907B2C42F518C482BBE501C758955858ADCB4C353AC1675CCC0BD32A84BAE3DB62757BB46E676A8CA25C3B0104FF086325F7E8A5D8E52A0ED'
+    $signature = base64_encode($signature) // 'MTBFQ0MxREE3OEMwQkVEOTA3QjJDNDJGNTE4QzQ4MkJCRTUwMUM3NTg5NTU4NThBRENCNEMzNTNBQzE2NzVDQ0MwQkQzMkE4NEJBRTNEQjYyNzU3QkI0NkU2NzZBOENBMjVDM0IwMTA0RkYwODYzMjVGN0U4QTVEOEU1MkEwRUQ=''
+    ```
+  contact:
+    email: grablink.engineering@grab.com
+    name: GrabLink Engineering
+  x-logo:
+    url: /grablink_logo.png
+    altText: GrabLink logo
+servers:
+  - url: 'https://links-checkout.stg-myteksi.com/api'
+    description: Staging
+  - url: 'https://links-checkout.grab.com/api'
+    description: Production
+paths:
+  /v1/transaction:
+    post:
+      summary: Create Transaction
+      operationId: post-transaction
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trans_id:
+                    type: string
+                    description: Unique ID generated by GrabLink representing this transaction
+                    example: 3ac51819b9bf4e6998f19cf6269b2dc1
+                  action_id:
+                    type: string
+                    description: Unique ID for the action performed against this transaction
+                    example: 073c53fc4fba4c0b9a3c0b04fae0fe1c
+                  action_time:
+                    type: string
+                    description: |-
+                      ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200")
+
+                      Datetime of this action happen
+                    example: '2019-09-26T07:58:30.996+0200'
+                  merchant_action_id:
+                    type: string
+                    description: Echo from request message
+                    example: c09adcc3f667454b95f7502b74a0ac32
+                  merchant_order_num:
+                    type: string
+                    description: Echo from request message
+                    example: SW21081200002313
+                  amount:
+                    $ref: '#/components/schemas/TransAmountResponse'
+                  terminal_data:
+                    $ref: '#/components/schemas/TerminalData'
+                  result:
+                    $ref: '#/components/schemas/TransResult'
+                  auth_code:
+                    type: string
+                    description: Acquirer Authorisation code
+                    example: '123456'
+                  cvc_result:
+                    type: string
+                    description: Result for CVC checks
+                    example: 1 Matches
+                  avs_result:
+                    type: string
+                    description: Result for AVS checks
+                    example: S
+                  acquirer_reference:
+                    type: string
+                    description: 'Acquirer reference return from acquirer, usually use for reconciliation purpose'
+                    example: '123456789012'
+                  payer:
+                    $ref: '#/components/schemas/TransPayerResponse'
+                  payment_method:
+                    type: object
+                    properties:
+                      card:
+                        $ref: '#/components/schemas/PaymentMethodCardResponse'
+                      token:
+                        $ref: '#/components/schemas/PaymentMethodTokenResponse'
+                      card_present:
+                        $ref: '#/components/schemas/PaymentMethodCardPresentResponse'
+                      fingerprint:
+                        type: string
+                        description: Alias of the card number
+                        example: cde2399feb94478dab841439d0c7a216
+                  status:
+                    $ref: '#/components/schemas/TransStatus'
+                  next_action:
+                    type: object
+                    description: Applicable when the status is "action required"
+                    properties:
+                      type:
+                        type: string
+                        description: |-
+                          redirection_url: redirect the consumer to the redirection_url endpoint provided for further action
+
+                          do_challenge: perform 3DS2 challenge using 3DS2 Native SDK
+                        enum:
+                          - redirection_url
+                          - do_challenge
+                      redirection_url:
+                        type: string
+                        description: Use this endpoint to redirect the customer browser (or web view on merchant app) for next action such as 3DS authentication or other payment mode that require browser based authentication
+                        format: uri
+                  metadata:
+                    type: object
+                    description: Echo from request message
+              examples:
+                Success:
+                  value:
+                    trans_id: '2109220518560101854303'
+                    action_time: '2021-09-22T05:19:02Z'
+                    merchant_action_id: 68420ccc49b54d09ba8665419460aa66
+                    merchant_order_num: '211225123456'
+                    amount:
+                      currency: SGD
+                      value: '100.00'
+                    result:
+                      code: S0000
+                      message: Success
+                      raw_message: Request successful
+                    auth_code: '007999'
+                    cvc_result: 1 Matches
+                    acquirer_reference: '000000345244'
+                    payment_method:
+                      card:
+                        brand: mc
+                        bin: '520698'
+                        trailing_number: '8993'
+                        funding_type: DEBIT
+                        variant: Debit MasterCard
+                        issuing_country: MX
+                        issuing_bank: 'Banco Nacional de Mexico, S.A.'
+                      fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+                    status: succeeded
+                Action Required:
+                  value:
+                    trans_id: '2110250538460100030091'
+                    action_id: '2110250538460100030091'
+                    merchant_action_id: 8c43ad54661e45a2ab90166b135c84ef
+                    merchant_order_num: '211225123456'
+                    amount:
+                      currency: SGD
+                      value: '100.00'
+                    result:
+                      code: S0005
+                      message: RedirectShopper
+                    payer:
+                      reference_id: john.doe@grab.com
+                    payment_method:
+                      card:
+                        brand: mc
+                        bin: '520698'
+                        trailing_number: '8993'
+                        funding_type: DEBIT
+                        variant: Debit MasterCard
+                        issuing_country: MX
+                        issuing_bank: 'Banco Nacional de Mexico, S.A.'
+                      token:
+                        token_id: pmt_7c6938f66437f1bb694d6191a48dc48e
+                      fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+                    status: action required
+                    next_action:
+                      type: redirection_url
+                      redirection_url: 'https://links-checkout.stg-myteksi.com/api/3ds/2110250538460100030091'
+                    metadata:
+                      key: value
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                  description: 'Unique transaction id assigned by merchant for each request. '
+                  maxLength: 32
+                  example: c09adcc3f667454b95f7502b74a0ac32
+                merchant_order_num:
+                  type: string
+                  description: The value of this parameter can be used to refer a transaction to the particular order record in merchant's system.
+                  maxLength: 50
+                  example: SW21081200002313
+                amount:
+                  $ref: '#/components/schemas/TransAmountRequest'
+                capture_method:
+                  type: string
+                  description: |-
+                    Default is manual.
+
+                    manual: Authorise will only be captured in capture endpoint 
+
+                    immediate: Transaction will be captured immediately. 
+                  enum:
+                    - immediate
+                    - manual
+                  maxLength: 10
+                  default: manual
+                  example: immediate
+                route_indicator:
+                  type: string
+                  description: Used to define routing algorithm to be used in a transaction
+                  maxLength: 20
+                  example: ''
+                interaction_mode:
+                  type: string
+                  description: |-
+                    Default is manual
+
+                    card_on_file: Credential on File is cardholder initiated transaction where they authorised a merchant to store their payment details.
+
+                    manual: Manual Entry. CVC is mandatory for manual interaction mode for card payment method.
+
+                    recurring: Recurring transaction, same as card_on_file but it is initiated by merchant.
+                  enum:
+                    - card_on_file
+                    - manual
+                  maxLength: 16
+                  example: manual
+                require_3ds:
+                  type: string
+                  description: |-
+                    This parameter indicates if you want to perform 3DS for a transaction or not. Allowed values: true or false.
+
+                    If not set, depend on the risk level of the transaction, 3DS might be required.
+                  enum:
+                    - 'true'
+                    - 'false'
+                  maxLength: 8
+                return_url:
+                  type: string
+                  maxLength: 2000
+                  format: uri
+                  description: |-
+                    This parameter is used to redirect the browser back to merchant's endpoint after completing next action required from merchant, such as 3DS authentication or any other payment method that require browser based authentication.
+
+                    This parameter will also be used in case of step-up 3DS authentication, even if require_3ds parameter is not set (or set to false). In the event that step-up 3DS authentication is required and this parameter is not set, Default Return URL will be used.
+
+                    Mandatory for Web/Browser Based 3DS Authentication.
+                browser_info:
+                  $ref: '#/components/schemas/TransBrowserInfo'
+                account_info:
+                  $ref: '#/components/schemas/TransAccountInfo'
+                three_ds_data:
+                  $ref: '#/components/schemas/Trans3dsData'
+                payer:
+                  $ref: '#/components/schemas/TransPayerRequest'
+                terminal_data:
+                  $ref: '#/components/schemas/TransTerminalDataRequest'
+                device_info:
+                  $ref: '#/components/schemas/TransDeviceInfo'
+                payment_method:
+                  type: object
+                  properties:
+                    card:
+                      $ref: '#/components/schemas/PaymentMethodCardRequest'
+                    token:
+                      $ref: '#/components/schemas/PaymentMethodTokenRequest'
+                    card_present:
+                      $ref: '#/components/schemas/PaymentMethodCardPresentRequest'
+                statement_descriptor:
+                  type: string
+                  maxLength: 25
+                  description: Description to appear on cardholder statement
+                  example: INV000214312
+                sub_merchant:
+                  $ref: '#/components/schemas/TransSubMerchant'
+                metadata:
+                  type: object
+                  description: 'Up to 20 keys, with key names up to 200 characters long and values up to 200 characters long.'
+              required:
+                - merchant_action_id
+                - amount
+                - payment_method
+            examples:
+              Manual Capture:
+                value:
+                  merchant_action_id: 68420ccc49b54d09ba8665419460aa66
+                  merchant_order_num: '211225123456'
+                  amount:
+                    currency: SGD
+                    value: '100.00'
+                  payment_method:
+                    card:
+                      number: '5206987603858993'
+                      expiry_month: '12'
+                      expiry_year: '2022'
+                      cvc: '123'
+                      holder_name: John Doe
+              Immediate Capture:
+                value:
+                  merchant_action_id: 8789089ac14e4a329acc839866c29164
+                  merchant_order_num: '211225123456'
+                  amount:
+                    currency: SGD
+                    value: '100.00'
+                  capture_method: immediate
+                  interaction_mode: card_on_file
+                  require_3ds: 'false'
+                  payer:
+                    reference_id: john.doe@grab.com
+                    name: John Doe
+                  statement_descriptor: '211225123456'
+                  payment_method:
+                    card:
+                      number: '5206987603858993'
+                      expiry_month: '12'
+                      expiry_year: '2022'
+                      cvc: '123'
+                      holder_name: John Doe
+                      create_token: true
+                  metadata:
+                    key: value
+              Payment Token:
+                value:
+                  merchant_action_id: 7011801cdc014a968d3ddf88d4c952ca
+                  merchant_order_num: '211225123456'
+                  amount:
+                    currency: SGD
+                    value: '100.00'
+                  capture_method: manual
+                  interaction_mode: card_on_file
+                  require_3ds: 'false'
+                  payer:
+                    reference_id: john.doe@grab.com
+                  statement_descriptor: '211225123456'
+                  payment_method:
+                    token:
+                      token_id: pmt_1e83f2f2eb3d6b69c6834a99cd3079af
+              PayFac:
+                value:
+                  merchant_action_id: 4126b06e89364eb6b110211e0e2b9e10
+                  merchant_order_num: '211225123456'
+                  amount:
+                    currency: SGD
+                    value: '100.00'
+                  capture_method: immediate
+                  interaction_mode: card_on_file
+                  require_3ds: 'false'
+                  payer:
+                    reference_id: john.doe@grab.com
+                  three_ds_data:
+                    xid: AQIDBAUGBwgJCgsMDQ4PEBESExQ=
+                    auth_value: ODUzNjAwM23123D=
+                    eci: '05'
+                  statement_descriptor: '211225123456'
+                  payment_method:
+                    card:
+                      number: '5206987603858993'
+                      expiry_month: '12'
+                      expiry_year: '2022'
+                      holder_name: John Doe
+                  sub_merchant:
+                    id: '123123123'
+                    name: Grab Food SG
+                    city: Singapore
+                    country: SG
+                    state: Singapore
+                    street: 7 Straits View
+                    postal_code: '121212'
+                    mcc: '5814'
+              3D Secure (Browser):
+                value:
+                  merchant_action_id: 8c43ad54661e45a2ab90166b135c84ef
+                  merchant_order_num: '211225123456'
+                  amount:
+                    currency: SGD
+                    value: '100.00'
+                  capture_method: immediate
+                  interaction_mode: manual
+                  require_3ds: 'true'
+                  return_url: 'http://localhost'
+                  browser_info:
+                    user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36'
+                    accept_header: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                  payer:
+                    reference_id: john.doe@grab.com
+                    name: John Doe
+                  statement_descriptor: '211225123456'
+                  payment_method:
+                    card:
+                      number: '5206987603858993'
+                      expiry_month: '12'
+                      expiry_year: '2022'
+                      cvc: '123'
+                      holder_name: John Doe
+                      create_token: true
+                  metadata:
+                    key: value
+        description: ''
+      callbacks:
+        transactionCallback:
+          'https://{webhook_endpoint}':
+            post:
+              summary: Transaction Event
+              description: An event triggered every time a Transaction is created.
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TransactionEvent'
+              responses:
+                '200':
+                  description: OK
+              parameters:
+                - $ref: '#/components/parameters/Content-Type'
+                - $ref: '#/components/parameters/Webhook-Signature'
+                - $ref: '#/components/parameters/TimeStamp'
+      description: Create new transaction.
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      tags:
+        - Transaction
+      x-internal: false
+    parameters: []
+  '/v1/transaction/{trans_id}':
+    parameters:
+      - schema:
+          type: string
+          example: 3ac51819b9bf4e6998f19cf6269b2dc1
+        name: trans_id
+        in: path
+        required: true
+        description: Unique Transaction ID (trans_id) from Create Transaction API Response.
+    get:
+      summary: Retrieve Transaction
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trans_id:
+                    type: string
+                    description: Unique ID generated by GrabLink representing this transaction
+                    example: 3ac51819b9bf4e6998f19cf6269b2dc1
+                  merchant_order_num:
+                    type: string
+                    description: Merchatn Order Number
+                    example: SW21081200002313
+                  amount:
+                    $ref: '#/components/schemas/TransAmountResponse'
+                  terminal_data:
+                    $ref: '#/components/schemas/TerminalData'
+                  auth_code:
+                    type: string
+                    description: Acquirer Authorisation code
+                    example: '123456'
+                  cvc_result:
+                    type: string
+                    description: Result for CVC checks
+                    example: 1 Matches
+                  avs_result:
+                    type: string
+                    description: Result for AVS checks
+                    example: S
+                  acquirer_reference:
+                    type: string
+                    description: Acquirer reference return from acquirer usually use for reconciliation purpose
+                    example: '123456789012'
+                  payer:
+                    $ref: '#/components/schemas/TransPayerResponse'
+                  payment_method:
+                    type: object
+                    properties:
+                      card:
+                        $ref: '#/components/schemas/PaymentMethodCardResponse'
+                      token:
+                        $ref: '#/components/schemas/PaymentMethodTokenResponse'
+                      card_present:
+                        $ref: '#/components/schemas/PaymentMethodCardPresentResponse'
+                      fingerprint:
+                        type: string
+                        description: Alias of the card number
+                  status:
+                    type: string
+                    enum:
+                      - pending
+                      - action required
+                      - failed
+                      - authorised
+                      - cancelling
+                      - cancelled
+                      - capturing
+                      - captured
+                      - refunding
+                      - refunded
+                      - partial refunded
+                    description: Overall transaction status
+                    example: captured
+                  metadata:
+                    type: object
+                  trans_logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        action_id:
+                          type: string
+                          description: Unique ID for the action performed against this transaction
+                          example: 073c53fc4fba4c0b9a3c0b04fae0fe1c
+                        action_type:
+                          type: string
+                          description: authorise/ capture/ refund/ cancel.
+                          enum:
+                            - authorise
+                            - capture
+                            - refund
+                            - cancel
+                            - generated_capture
+                            - add_payment_method
+                          example: authorise
+                        status:
+                          $ref: '#/components/schemas/TransStatus'
+                        next_action:
+                          type: object
+                          description: Applicable when the status is "action required"
+                          properties:
+                            type:
+                              type: string
+                              description: |-
+                                redirection_url: redirect the consumer to the redirection_url endpoint provided for further action
+
+                                do_challenge: perform 3DS2 challenge using 3DS2 Native SDK
+                              enum:
+                                - redirection_url
+                                - do_challenge
+                            redirection_url:
+                              type: string
+                              description: Use this endpoint to redirect the customer browser (or web view on merchant app) for next action such as 3DS authentication or other payment mode that require browser based authentication
+                              format: uri
+                        action_time:
+                          type: string
+                          description: |-
+                            ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200")
+
+                            transaction time of particular payment action
+                          example: '2019-09-26T07:58:30.996+0200'
+                        merchant_action_id:
+                          type: string
+                          example: c09adcc3f667454b95f7502b74a0ac32
+                        initiating_reason:
+                          type: string
+                          description: Applicable for action_type refund or cancel
+                        amount:
+                          $ref: '#/components/schemas/TransAmountResponse'
+                        result:
+                          $ref: '#/components/schemas/TransResult'
+              examples:
+                'Status: refunded':
+                  value:
+                    trans_id: '2109220518560101854303'
+                    merchant_order_num: '211225123456'
+                    amount:
+                      currency: SGD
+                      value: '100.00'
+                    auth_code: '007999'
+                    cvc_result: 1 Matches
+                    acquirer_reference: '000000345244'
+                    payer: {}
+                    payment_method:
+                      card:
+                        brand: mc
+                        bin: '520698'
+                        trailing_number: '8993'
+                        funding_type: DEBIT
+                        variant: Debit MasterCard
+                        issuing_country: MX
+                        issuing_bank: 'Banco Nacional de Mexico, S.A.'
+                      token:
+                        token_id: pmt_tmp_97d71f355cc7444fb3386bea88c81164
+                      fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+                    status: refunded
+                    trans_logs:
+                      - action_id: '2109220518560101854303'
+                        action_type: authorise
+                        status: succeeded
+                        action_time: '2021-09-22T05:19:02Z'
+                        merchant_action_id: 68420ccc49b54d09ba8665419460aa66
+                        amount:
+                          currency: SGD
+                          value: '100.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                      - action_id: '2109220534580101854616'
+                        action_type: capture
+                        status: succeeded
+                        action_time: '2021-09-22T05:34:59Z'
+                        merchant_action_id: 9a4b7c8e833c47e4ba91a5ff03bda4a1
+                        amount:
+                          currency: SGD
+                          value: '100.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                      - action_id: '2109220537240101854654'
+                        action_type: refund
+                        status: succeeded
+                        action_time: '2021-09-22T05:37:28Z'
+                        merchant_action_id: f3cc3057cc184e1d8e780b6e4f5193cc
+                        initiating_reason: No stock
+                        amount:
+                          currency: SGD
+                          value: '30.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                      - action_id: '2109220539100101854695'
+                        action_type: refund
+                        status: succeeded
+                        action_time: '2021-09-22T05:39:14Z'
+                        merchant_action_id: ac1ed0538b9248429381a2ef8f71702a
+                        initiating_reason: No stock
+                        amount:
+                          currency: SGD
+                          value: '70.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                'Status: captured':
+                  value:
+                    trans_id: '2109220541420101854734'
+                    merchant_order_num: '211225123456'
+                    amount:
+                      currency: SGD
+                      value: '100.00'
+                    auth_code: '008008'
+                    cvc_result: 1 Matches
+                    acquirer_reference: '000000345258'
+                    payer:
+                      reference_id: john.doe@grab.com
+                    payment_method:
+                      card:
+                        brand: mc
+                        bin: '520698'
+                        trailing_number: '8993'
+                        funding_type: DEBIT
+                        variant: Debit MasterCard
+                        issuing_country: MX
+                        issuing_bank: 'Banco Nacional de Mexico, S.A.'
+                      token:
+                        token_id: pmt_1d22bdb817521bcd44ada4da9e849e49
+                      fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+                    status: captured
+                    metadata:
+                      key: value
+                    trans_logs:
+                      - action_id: '2109220541420101854734'
+                        action_type: authorise
+                        status: succeeded
+                        action_time: '2021-09-22T05:41:49Z'
+                        merchant_action_id: 424233b392674b3abf9e8eb1ff21d42f
+                        amount:
+                          currency: SGD
+                          value: '100.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                      - action_id: '2109220541490101854736'
+                        action_type: generated_capture
+                        status: succeeded
+                        action_time: '0001-01-01T00:00:00Z'
+                        merchant_action_id: '2109220541490101854736'
+                        amount:
+                          currency: SGD
+                          value: '100.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                'Status: authorised':
+                  value:
+                    trans_id: '2109220542260101854738'
+                    merchant_order_num: '211225123456'
+                    amount:
+                      currency: SGD
+                      value: '100.00'
+                    auth_code: '008010'
+                    cvc_result: 1 Matches
+                    acquirer_reference: '000000345262'
+                    payer: {}
+                    payment_method:
+                      card:
+                        brand: mc
+                        bin: '520698'
+                        trailing_number: '8993'
+                        funding_type: DEBIT
+                        variant: Debit MasterCard
+                        issuing_country: MX
+                        issuing_bank: 'Banco Nacional de Mexico, S.A.'
+                      token:
+                        token_id: pmt_tmp_3594d162bf3b4283a3c57bc4107d9226
+                      fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+                    status: authorised
+                    trans_logs:
+                      - action_id: '2109220542260101854738'
+                        action_type: authorise
+                        status: succeeded
+                        action_time: '2021-09-22T05:42:30Z'
+                        merchant_action_id: b20d93a8e2d4452d900d285ed4643c85
+                        amount:
+                          currency: SGD
+                          value: '100.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                'Status: partial refunded':
+                  value:
+                    trans_id: '2109220543080101854777'
+                    merchant_order_num: '211225123456'
+                    amount:
+                      currency: SGD
+                      value: '100.00'
+                    auth_code: '008011'
+                    cvc_result: 1 Matches
+                    acquirer_reference: '000000345264'
+                    payer:
+                      reference_id: john.doe@grab.com
+                    payment_method:
+                      card:
+                        brand: mc
+                        bin: '520698'
+                        trailing_number: '8993'
+                        funding_type: DEBIT
+                        variant: Debit MasterCard
+                        issuing_country: MX
+                        issuing_bank: 'Banco Nacional de Mexico, S.A.'
+                      token:
+                        token_id: pmt_17bb6d56e20c8fda03a26d105c78b716
+                      fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+                    status: partial refunded
+                    metadata:
+                      key: value
+                    trans_logs:
+                      - action_id: '2109220543080101854777'
+                        action_type: authorise
+                        status: succeeded
+                        action_time: '2021-09-22T05:43:12Z'
+                        merchant_action_id: 14d05bc2e0b443caad3727d13009946a
+                        amount:
+                          currency: SGD
+                          value: '100.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                      - action_id: '2109220543120101854778'
+                        action_type: generated_capture
+                        status: succeeded
+                        action_time: '0001-01-01T00:00:00Z'
+                        merchant_action_id: '2109220543120101854778'
+                        amount:
+                          currency: SGD
+                          value: '100.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+                      - action_id: '2109220543160101854779'
+                        action_type: refund
+                        status: succeeded
+                        action_time: '2021-09-22T05:43:21Z'
+                        merchant_action_id: 632e1c670aca4c1eb64eb63aa7be302a
+                        initiating_reason: No stock
+                        amount:
+                          currency: SGD
+                          value: '70.00'
+                        result:
+                          code: S0000
+                          message: Success
+                          raw_message: Request successful
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-transaction-id
+      parameters:
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      description: Retrieve a transaction.
+      tags:
+        - Transaction
+  '/v1/transaction/{trans_id}/capture':
+    parameters:
+      - schema:
+          type: string
+          example: 3ac51819b9bf4e6998f19cf6269b2dc1
+        name: trans_id
+        in: path
+        required: true
+        description: Unique Transaction ID (trans_id) from Create Transaction API Response.
+    post:
+      summary: Capture
+      operationId: post-transaction-trans_id-capture
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModificationResponse'
+              examples:
+                Example:
+                  value:
+                    action_time: '2021-09-22T05:34:59+00:00'
+                    action_id: '2109220534580101854616'
+                    merchant_action_id: 9a4b7c8e833c47e4ba91a5ff03bda4a1
+                    status: succeeded
+                    amount:
+                      currency: SGD
+                      value: '100.00'
+                    result:
+                      code: S0000
+                      message: Success
+                      raw_message: Request successful
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Capture an authorised transaction.
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                  maxLength: 32
+                  description: 'Unique transaction id assigned by merchant for each request. '
+                  example: 581c6281cdf747c8b4de5ee2d9408388
+                amount:
+                  $ref: '#/components/schemas/TransAmountRequest'
+                terminal_data:
+                  $ref: '#/components/schemas/TerminalData'
+              required:
+                - merchant_action_id
+                - amount
+            examples:
+              Example:
+                value:
+                  merchant_action_id: 9a4b7c8e833c47e4ba91a5ff03bda4a1
+                  amount:
+                    currency: SGD
+                    value: '100.00'
+        description: ''
+      callbacks:
+        captureCallback:
+          'https://{webhook_endpoint}':
+            post:
+              summary: Capture Event
+              description: An event triggered every time a Capture is created.
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/CaptureEvent'
+              responses:
+                '200':
+                  description: OK
+              parameters:
+                - $ref: '#/components/parameters/Content-Type'
+                - $ref: '#/components/parameters/Webhook-Signature'
+                - $ref: '#/components/parameters/TimeStamp'
+      tags:
+        - Transaction
+  '/v1/transaction/{trans_id}/refund':
+    parameters:
+      - schema:
+          type: string
+          example: 3ac51819b9bf4e6998f19cf6269b2dc1
+        name: trans_id
+        in: path
+        required: true
+        description: Unique Transaction ID (trans_id) from Create Transaction API Response.
+    post:
+      summary: Refund
+      operationId: post-transaction-trans_id-refund
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModificationResponse'
+              examples:
+                Partial Refund:
+                  value:
+                    action_time: '2021-09-22T05:37:28+00:00'
+                    action_id: '2109220537240101854654'
+                    merchant_action_id: f3cc3057cc184e1d8e780b6e4f5193cc
+                    status: succeeded
+                    amount:
+                      currency: SGD
+                      value: '30.00'
+                    result:
+                      code: S0000
+                      message: Success
+                      raw_message: Request successful
+                Full Refund:
+                  value:
+                    action_time: '2021-09-22T05:39:14+00:00'
+                    action_id: '2109220539100101854695'
+                    merchant_action_id: ac1ed0538b9248429381a2ef8f71702a
+                    status: succeeded
+                    amount:
+                      currency: SGD
+                      value: '70.00'
+                    result:
+                      code: S0000
+                      message: Success
+                      raw_message: Request successful
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Refund a captured transaction.
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                  maxLength: 32
+                  description: 'Unique transaction id assigned by merchant for each request. '
+                  example: 581c6281cdf747c8b4de5ee2d9408388
+                initiating_reason:
+                  type: string
+                  maxLength: 128
+                  example: wrong order
+                amount:
+                  $ref: '#/components/schemas/TransAmountRequest'
+                terminal_data:
+                  $ref: '#/components/schemas/TerminalData'
+              required:
+                - merchant_action_id
+                - initiating_reason
+                - amount
+            examples:
+              Partial Refund:
+                value:
+                  merchant_action_id: f3cc3057cc184e1d8e780b6e4f5193cc
+                  amount:
+                    currency: SGD
+                    value: '30.00'
+                  initiating_reason: No stock
+              Full Refund:
+                value:
+                  merchant_action_id: ac1ed0538b9248429381a2ef8f71702a
+                  amount:
+                    currency: SGD
+                    value: '70.00'
+                  initiating_reason: No stock
+        description: ''
+      callbacks:
+        refundCallback:
+          'https://{webhook_endpoint}':
+            post:
+              summary: Refund Event
+              description: An event triggered every time a Refund is created.
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/RefundEvent'
+              responses:
+                '200':
+                  description: OK
+              parameters:
+                - $ref: '#/components/parameters/Content-Type'
+                - $ref: '#/components/parameters/Webhook-Signature'
+                - $ref: '#/components/parameters/TimeStamp'
+      tags:
+        - Transaction
+  '/v1/transaction/{trans_id}/cancel':
+    parameters:
+      - schema:
+          type: string
+          example: 3ac51819b9bf4e6998f19cf6269b2dc1
+        name: trans_id
+        in: path
+        required: true
+        description: Unique Transaction ID (trans_id) from Create Transaction API Response.
+    post:
+      summary: Cancel
+      operationId: post-transaction-trans_id-cancel
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModificationResponse'
+              examples:
+                Example:
+                  value:
+                    action_time: '2021-09-22T05:27:13+00:00'
+                    action_id: '2109220527070101854463'
+                    merchant_action_id: c1adb79775db477196103d87b2ad6e0c
+                    status: succeeded
+                    amount:
+                      currency: SGD
+                      value: '100.00'
+                    result:
+                      code: S0000
+                      message: Success
+                      raw_message: Request successful
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Cancel an authorised transaction.
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                  maxLength: 32
+                  description: 'Unique transaction id assigned by merchant for each request. '
+                  example: 581c6281cdf747c8b4de5ee2d9408388
+                initiating_reason:
+                  type: string
+                  maxLength: 128
+                  example: wrong order
+                terminal_data:
+                  $ref: '#/components/schemas/TerminalData'
+              required:
+                - merchant_action_id
+                - initiating_reason
+            examples:
+              Example:
+                value:
+                  merchant_action_id: c1adb79775db477196103d87b2ad6e0c
+                  initiating_reason: Consumer cancelled the order
+        description: ''
+      callbacks:
+        cancelCallback:
+          'https://{webhook_endpoint}':
+            post:
+              summary: Cancel Event
+              description: An event triggered every time a Cancel is created.
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/CancelEvent'
+              responses:
+                '200':
+                  description: OK
+              parameters:
+                - $ref: '#/components/parameters/Content-Type'
+                - $ref: '#/components/parameters/Webhook-Signature'
+                - $ref: '#/components/parameters/TimeStamp'
+      tags:
+        - Transaction
+  /v1/transaction/search:
+    parameters: []
+    post:
+      summary: Search (coming soon)
+      operationId: post-v1-transaction-search
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trans_logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        trans_id:
+                          type: string
+                          description: Unique ID generated by GrabLink representing this transaction
+                          example: 9c9848f24258482298f231374b41755d
+                        action_id:
+                          type: string
+                        action_type:
+                          type: string
+                          description: authorise/ capture/ refund/ cancel.
+                          example: authorise
+                        status:
+                          type: string
+                        action_time:
+                          type: string
+                          description: |-
+                            ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200")
+
+                            transaction time of particular payment action
+                          example: '2019-09-26T07:58:30.996+0200'
+                        merchant_action_id:
+                          type: string
+                          example: 75a9db06fd654cecb752a44cdec44a5b
+                        merchant_order_no:
+                          type: string
+                        amount:
+                          $ref: '#/components/schemas/TransAmountResponse'
+                        terminal_data:
+                          $ref: '#/components/schemas/TerminalData'
+                        payment_method:
+                          type: object
+                          properties:
+                            card:
+                              $ref: '#/components/schemas/PaymentMethodCardResponse'
+                            token:
+                              $ref: '#/components/schemas/PaymentMethodTokenResponse'
+                            card_present:
+                              $ref: '#/components/schemas/PaymentMethodCardPresentResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Search transactions based on certain search criteria.
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                search_criteria:
+                  type: string
+                search_value:
+                  type: string
+                starting_after:
+                  type: string
+                  description: |-
+                    ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200")
+
+                    will return the data after this cursor time by DESC
+                limit:
+                  type: integer
+                  description: 'the limitation of records returned, the default is 50. range from 1~100'
+      tags:
+        - Transaction
+  /v1/order:
+    post:
+      summary: Create Order
+      operationId: post-order
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                    description: Unique ID generated by GrabLink representing this order
+                    example: 1020c4a4bb8f4bdba76bcf5b71614eba
+                  merchant_order_num:
+                    type: string
+                    description: Echo from request message
+                    example: SW21081200002313
+                  status:
+                    type: string
+                    description: Status of the order request
+                    enum:
+                      - unknown
+                      - created
+                      - pending
+                      - cancelled
+                      - failed
+                      - success
+                    example: success
+                  payer:
+                    $ref: '#/components/schemas/TransPayerResponse'
+                  cart:
+                    type: object
+                    properties:
+                      cart_currency:
+                        type: string
+                        example: SGD
+                      cart_total:
+                        type: string
+                        example: '150.00'
+                  hpp:
+                    type: object
+                    properties:
+                      redirect_url:
+                        type: string
+                        description: The Hosted Payment Page URL to redirect the user to proceed with payment
+                        format: uri
+                  metadata:
+                    description: Echo from request message
+                    type: object
+              examples:
+                Example:
+                  value:
+                    order_id: 8cff9f16bc2b4e5da50624df3a9243be
+                    merchant_order_num: '211225123456'
+                    status: created
+                    payer:
+                      reference_id: john.doe@grab.com
+                    cart:
+                      cart_currency: SGD
+                      cart_total: '13.00'
+                    hpp:
+                      redirect_url: 'https://links-checkout.stg-myteksi.com/pay/bca1cc50d972461886ce6b6d950375ef'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_order_num:
+                  type: string
+                  description: The value of this parameter can be used to refer a transaction to the particular order record in merchant's system.
+                  maxLength: 50
+                  example: SW21081200002313
+                route_indicator:
+                  type: string
+                  description: Used to define routing algorithm to be used in a transaction
+                  maxLength: 20
+                  example: ''
+                require_3ds:
+                  type: string
+                  description: |-
+                    This parameter indicates if you want to perform 3DS for a transaction or not. Allowed values: true or false.
+
+                    If not set, depend on the risk level of the transaction, 3DS might be required.
+                  enum:
+                    - 'true'
+                    - 'false'
+                  maxLength: 8
+                payer:
+                  $ref: '#/components/schemas/TransPayerRequest'
+                statement_descriptor:
+                  type: string
+                  maxLength: 25
+                  description: Description to appear on cardholder statement
+                  example: INV000214312
+                cart:
+                  type: object
+                  required:
+                    - cart_currency
+                    - cart_total
+                  properties:
+                    cart_currency:
+                      type: string
+                      minLength: 3
+                      maxLength: 3
+                      example: SGD
+                      description: Currency of the shopping cart
+                    cart_total:
+                      type: string
+                      description: 'Total order amount, must be greater than 0.00'
+                      maxLength: 16
+                      example: '150.00'
+                    cart_subtotal:
+                      type: string
+                      maxLength: 16
+                      example: '137.00'
+                    cart_discount:
+                      type: string
+                      maxLength: 16
+                      example: '0.00'
+                    cart_tax:
+                      type: string
+                      maxLength: 16
+                      example: '0.00'
+                    cart_shipping_fee:
+                      type: string
+                      maxLength: 16
+                      example: '10.00'
+                    cart_admin_fee:
+                      type: string
+                      maxLength: 16
+                      example: '3.00'
+                    cart_items:
+                      type: array
+                      maxItems: 50
+                      items:
+                        type: object
+                        properties:
+                          item_name:
+                            type: string
+                            maxLength: 200
+                            example: Apple iPhone SE
+                          item_quantity:
+                            type: integer
+                            example: 1
+                          item_price:
+                            type: string
+                            maxLength: 16
+                            example: '137.00'
+                          item_image:
+                            type: string
+                            maxLength: 2000
+                            format: uri
+                            description: URL to the Item image
+                          item_option:
+                            type: string
+                            maxLength: 200
+                            example: White; 256gb
+                hpp:
+                  type: object
+                  required:
+                    - return_url
+                    - cancel_url
+                  properties:
+                    return_url:
+                      type: string
+                      maxLength: 2000
+                      format: uri
+                      description: The Merchant URL to redirect the user to once the payment is performed
+                    cancel_url:
+                      type: string
+                      maxLength: 2000
+                      format: uri
+                      description: The Merchant URL to redirect the user to if the user cancels the payment
+                    browser_info:
+                      type: object
+                      properties:
+                        user_agent:
+                          type: string
+                          maxLength: 128
+                          description: The user agent value of the browser
+                          example: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36'
+                        ip:
+                          type: string
+                          maxLength: 32
+                          format: ipv4
+                          description: 'IP address of the device. Example: 202.123.100.11'
+                          example: 202.123.100.11
+                metadata:
+                  description: 'Up to 20 keys, with key names up to 200 characters long and values up to 200 characters long.'
+                  type: object
+              required:
+                - payer
+                - cart
+                - hpp
+            examples:
+              Example:
+                value:
+                  merchant_order_num: '211225123456'
+                  require_3ds: 'true'
+                  hpp:
+                    return_url: 'https://example.com/order/success'
+                    cancel_url: 'https://example.com/order/cancel'
+                    browser_info:
+                      ip: 127.0.0.1
+                      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36'
+                  statement_descriptor: '211225123456'
+                  cart:
+                    cart_shipping_fee: '2.00'
+                    cart_tax: '3.00'
+                    cart_items:
+                      - item_price: '6.00'
+                        item_quantity: 1
+                        item_image: 'https://example.com/sticker_pack.png'
+                        item_name: Example Sticker Pack
+                        item_option: Transparent
+                      - item_price: '2.00'
+                        item_quantity: 2
+                        item_image: 'https://example.com/sticker_large.png'
+                        item_name: Example Large Sticker
+                        item_option: Large
+                    cart_discount: '0.00'
+                    cart_currency: SGD
+                    cart_total: '13.00'
+                  payer:
+                    email: john.doe@grab.com
+                    phone: '+6598765432'
+                    shipping_address:
+                      building_name: Marina One
+                      country: SG
+                      state: SG
+                      city: SG
+                      street: 7 Straits View
+                      postal_code: '018936'
+                    billing_address:
+                      building_name: Grab HQ
+                      country: SG
+                      state: Singapore
+                      city: Singapore
+                      street: Media Link
+                      postal_code: '139305'
+                    name: John Doe
+                    reference_id: john.doe@grab.com
+        description: ''
+      callbacks:
+        orderCallback:
+          'https://{webhook_endpoint}':
+            post:
+              summary: Order Event
+              description: An event triggered every time an Order is completed.
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/OrderEvent'
+              responses:
+                '200':
+                  description: OK
+              parameters:
+                - $ref: '#/components/parameters/Content-Type'
+                - $ref: '#/components/parameters/Webhook-Signature'
+                - $ref: '#/components/parameters/TimeStamp'
+      description: |-
+        Create Order API creates Hosted Payment Page Session and returns Redirect URL in the response. 
+
+        Once consumer redirected to the provided URL and complete the payment, the transaction result callback will be triggered through webhook to designated merchant's endpoint, consumer will be redirected back to Return URL. 
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      tags:
+        - Hosted Payment Page
+    parameters: []
+  '/v1/terminal/{terminal_id}/batch':
+    parameters:
+      - schema:
+          type: string
+          example: 15194a1d5cdb48e3875f78575009c247
+        name: terminal_id
+        in: path
+        required: true
+        description: Terminal ID
+    get:
+      summary: Batch History
+      tags:
+        - Terminal
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  terminal_data:
+                    $ref: '#/components/schemas/TerminalData'
+                  batch_logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        created_at:
+                          type: string
+                          example: '2019-09-26T07:58:30.996+0200'
+                        closed_at:
+                          type: string
+                          example: '2019-09-26T09:58:30.996+0200'
+                        batch_code:
+                          type: string
+                          description: Batch Code of the requested batch
+                          example: '12'
+                        count:
+                          type: integer
+                          description: Total count of transactions in the batch
+                          example: 10
+                        amount:
+                          $ref: '#/components/schemas/TransAmountResponse'
+                        status:
+                          type: string
+                          description: 'Batch status: open/closed'
+                          example: open
+                          enum:
+                            - open
+                            - closed
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-v1-terminal-terminal_id-batch
+      description: Batch History API returns list of batches from specified terminal ID
+      parameters:
+        - schema:
+            type: string
+            example: '2019-09-26T07:58:30.996+0200'
+          in: query
+          name: starting_after
+          description: 'ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200"). Retrieve Batch Details API will return the data after this cursor time by DESC'
+        - schema:
+            type: integer
+            example: 50
+          in: query
+          name: limit
+          description: 'the limitation of records returned, the default is 50. Range from 1~100'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+  '/v1/terminal/{terminal_id}/batch/{batch_code}':
+    get:
+      summary: Batch Summary
+      tags:
+        - Terminal
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TerminalBatchSummary'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-v1-terminal-terminal_id-batch-batch_id
+      parameters:
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      description: Batch Summary API returns the batch net total and count of all types of transactions performed from specified batch code.
+    parameters:
+      - schema:
+          type: string
+          example: 15194a1d5cdb48e3875f78575009c247
+        name: terminal_id
+        in: path
+        required: true
+        description: Terminal ID
+      - schema:
+          type: string
+          example: '12'
+        name: batch_code
+        in: path
+        required: true
+        description: 'Batch Code. Use ''latest'' as alias to get the summary of latest batch from the terminal, ie. GET /v1/terminal/{terminal_id}/batch/latest'
+  '/v1/terminal/{terminal_id}/batch/{batch_code}/details':
+    parameters:
+      - schema:
+          type: string
+          example: 15194a1d5cdb48e3875f78575009c247
+        name: terminal_id
+        in: path
+        required: true
+        description: Terminal ID
+      - schema:
+          type: string
+          example: '12'
+        name: batch_code
+        in: path
+        required: true
+        description: 'Batch Code. Use ''latest'' as alias to get the details of latest batch from the terminal, ie. GET /v1/terminal/{terminal_id}/batch/latest/details'
+    get:
+      summary: Batch Details
+      tags:
+        - Terminal
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/TerminalBatch'
+                  - type: object
+                    properties:
+                      trans_logs:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            trans_id:
+                              type: string
+                              description: Unique ID generated by GrabLink representing this transaction
+                              example: 9c9848f24258482298f231374b41755d
+                            action_id:
+                              type: string
+                            action_type:
+                              type: string
+                              description: authorise/ capture/ refund/ cancel.
+                              example: authorise
+                            status:
+                              type: string
+                            action_time:
+                              type: string
+                              description: |-
+                                ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200")
+
+                                transaction time of particular payment action
+                              example: '2019-09-26T07:58:30.996+0200'
+                            merchant_action_id:
+                              type: string
+                              example: 75a9db06fd654cecb752a44cdec44a5b
+                            merchant_order_no:
+                              type: string
+                            amount:
+                              $ref: '#/components/schemas/TransAmountResponse'
+                            payment_method:
+                              type: object
+                              properties:
+                                card_present:
+                                  $ref: '#/components/schemas/PaymentMethodBatchDetails'
+                      status:
+                        type: string
+                        description: 'Batch status: open/closed'
+                        example: open
+                        enum:
+                          - open
+                          - closed
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-v1-terminal-terminal_id-batch-batch_id-details
+      description: Batch Details API returns all transactions performed within the specified batch code
+      parameters:
+        - schema:
+            type: string
+            example: '2019-09-26T07:58:30.996+0200'
+          in: query
+          name: starting_after
+          description: 'ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200"). Retrieve Batch Details API will return the data after this cursor time by DESC'
+        - schema:
+            type: integer
+            example: 50
+          in: query
+          name: limit
+          description: 'the limitation of records returned, the default is 50. Range from 1~100'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+  '/v1/terminal/{terminal_id}/batch/{batch_code}/close':
+    parameters:
+      - schema:
+          type: string
+          example: 15194a1d5cdb48e3875f78575009c247
+        name: terminal_id
+        in: path
+        required: true
+        description: Terminal ID
+      - schema:
+          type: string
+          example: '12'
+        name: batch_code
+        in: path
+        required: true
+        description: 'Batch Code. Use ''latest'' as alias to close the latest batch from the terminal, ie. POST /v1/terminal/{terminal_id}/batch/latest/close'
+    post:
+      summary: Batch Closing
+      operationId: post-v1-terminal-terminal_id-batch-batch_id-close
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TerminalBatchClosing'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Batch closing action for the current open batch from the specific terminal ID
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      tags:
+        - Terminal
+  '/v1/transaction/{trans_id}/tc':
+    parameters:
+      - schema:
+          type: string
+          example: 3ac51819b9bf4e6998f19cf6269b2dc1
+        name: trans_id
+        in: path
+        required: true
+        description: Unique Transaction ID (trans_id) from Create Transaction API Response.
+    post:
+      summary: TC Upload (to be confirmed)
+      operationId: post-v1-transaction-trans_id-tc
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_time:
+                    type: string
+                    description: |-
+                      ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200")
+
+                      Datetime of this transaction happen
+                    example: '2019-09-26T07:58:30.996+0200'
+                  action_id:
+                    type: string
+                    description: Unique ID for the action performed against this transaction
+                    example: 7f3dbd4bdbe746aa992571e6263fdd04
+                  merchant_action_id:
+                    type: string
+                    example: 880e0b18dbea4cc8ba7e34bd75339a95
+                  status:
+                    $ref: '#/components/schemas/TransStatus'
+                  amount:
+                    $ref: '#/components/schemas/TransAmountResponse'
+                  terminal_data:
+                    $ref: '#/components/schemas/TerminalData'
+                  result:
+                    $ref: '#/components/schemas/TransResult'
+              examples:
+                Example:
+                  value:
+                    action_time: '2019-09-26T07:58:30.996+0200'
+                    action_id: 7f3dbd4bdbe746aa992571e6263fdd04
+                    merchant_action_id: 880e0b18dbea4cc8ba7e34bd75339a95
+                    status: succeeded
+                    amount:
+                      currency: SGD
+                      value: '150.00'
+                    terminal_data:
+                      terminal_id: 15194a1d5cdb48e3875f78575009c247
+                    result:
+                      code: S0000
+                      message: Success
+                      raw_message: Success
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: TC Upload
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                  maxLength: 32
+                  description: 'Unique transaction id assigned by merchant for each request. '
+                  example: 880e0b18dbea4cc8ba7e34bd75339a95
+                amount:
+                  $ref: '#/components/schemas/TransAmountRequest'
+                terminal_data:
+                  $ref: '#/components/schemas/TransTerminalDataRequest'
+                payment_method:
+                  type: object
+                  properties:
+                    card_present:
+                      $ref: '#/components/schemas/PaymentMethodCardPresentRequest'
+              required:
+                - merchant_action_id
+                - amount
+            examples:
+              Example:
+                value:
+                  merchant_action_id: 880e0b18dbea4cc8ba7e34bd75339a95
+                  amount:
+                    currency: SGD
+                    value: '150.00'
+                  terminal_data:
+                    terminal_id: 15194a1d5cdb48e3875f78575009c247
+                    pos_entry_mode:
+                      pan_entry: contactless_chip
+                      pin_entry: disabled
+                    pos_condition_code: attended
+                  payment_method:
+                    card_present:
+                      number: '4444333322221111'
+                      expiry_month: '04'
+                      expiry_year: '2028'
+                      cvc: '123'
+                      sequence_num: '01'
+                      icc_data: 01495F2A0201245F34010182021C008407A0000000031010950580000000009A031102249B0268009C01009F02060000000000009F03060000000000009F0607A00000000310109F0802008C9F0902008C9F100706010A039000009F1A0201249F2608423158936ED6C38F9F2701809F3303E0B0C89F34034103029F3501229F360200019F3704ACAC66E89F5800DF0100DF0200DF0400
+                      track2_data: 4444333322221111=2225111123400001230
+        description: ''
+      tags:
+        - Terminal
+  '/v1/terminal/{terminal_id}/reversal':
+    parameters:
+      - schema:
+          type: string
+          example: 15194a1d5cdb48e3875f78575009c247
+        name: terminal_id
+        in: path
+        required: true
+        description: Terminal ID
+    post:
+      summary: Reversal (to be confirmed)
+      operationId: post-v1-terminal-terminal_id-reversal
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModificationResponse'
+              examples:
+                Example:
+                  value:
+                    action_time: '2019-09-26T07:58:30.996+0200'
+                    action_id: 7d1f9274a64c4ede8bf1476de926e9c1
+                    merchant_action_id: 581c6281cdf747c8b4de5ee2d9408388
+                    status: succeeded
+                    amount:
+                      currency: SGD
+                      value: '150.00'
+                    terminal_data:
+                      terminal_id: 15194a1d5cdb48e3875f78575009c247
+                    result:
+                      code: S0000
+                      message: Success
+                      raw_message: Success
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      description: Reversal
+      parameters:
+        - $ref: '#/components/parameters/Content-Type'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/TimeStamp'
+        - $ref: '#/components/parameters/Idempotency-Key'
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/X-Api-Key'
+      tags:
+        - Terminal
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant_action_id:
+                  type: string
+                  maxLength: 32
+                  description: 'Unique transaction id assigned by merchant for each request. '
+                  example: 581c6281cdf747c8b4de5ee2d9408388
+                original_merchant_action_id:
+                  type: string
+                  maxLength: 32
+                  description: Original Merchant Action ID of request to be reversed.
+                  example: c09adcc3f667454b95f7502b74a0ac32
+              required:
+                - merchant_action_id
+                - original_merchant_action_id
+            examples:
+              Example:
+                value:
+                  merchant_action_id: 581c6281cdf747c8b4de5ee2d9408388
+                  original_merchant_action_id: c09adcc3f667454b95f7502b74a0ac32
+        description: ''
+components:
+  schemas:
+    PaymentMethodCardResponse:
+      type: object
+      properties:
+        brand:
+          type: string
+          description: 'Brand of the card. Example visa, master and etc.'
+          example: VISA
+        bin:
+          type: string
+          description: First 6 digits of card
+          example: '444433'
+        trailing_number:
+          type: string
+          description: Last 4 digits of card
+          example: '1111'
+        funding_type:
+          type: string
+          description: 'Card funding type. Example debit, credit and etc.'
+          example: CREDIT
+        variant:
+          type: string
+          description: 'Card variant. Example platinum, gold and etc.'
+          example: PLATINUM
+        issuing_country:
+          type: string
+          description: Card issuing country
+          example: Singapore
+        issuing_bank:
+          type: string
+          description: Card issuing bank
+          example: STANDARD CHARTERED
+    PaymentMethodTokenResponse:
+      type: object
+      description: 'Echo from request message if present, or token created for future transaction.'
+      properties:
+        token_id:
+          type: string
+          example: pmt_fb5e60b1821a4037987ad817c33e9c60
+    PaymentMethodCardPresentResponse:
+      type: object
+      description: ''
+      properties:
+        brand:
+          type: string
+          description: 'Brand of the card. Example visa, master and etc.'
+          example: VISA
+        bin:
+          type: string
+          description: First 6 digits of card.
+          example: '444433'
+        trailing_number:
+          type: string
+          description: Last 4 digits of card.
+          example: '1111'
+        funding_type:
+          type: string
+          description: 'Card funding type. Example debit, credit and etc.'
+          example: CREDIT
+        icc_data:
+          type: string
+          example: 9F02060000000009009C01009A030608025F2A0209789F1A0208409F260856BF299472BDB0C782025C009F360245679F370412135414950540800080009F1E04001122339F102006011A03900000112233445566778899AABBCCDD0390000011223344556677889F5301039F41030122339F03060001020304058407A00000000410109F2701809F34035E03009F090243219F3501059F3303E0B8C89110001122334455667788010203040506079F5B1000112233445566778801020304050607
+          description: Hex string representation of ICC Data returned by issuer.
+    PaymentMethodBatchDetails:
+      type: object
+      description: ''
+      properties:
+        brand:
+          type: string
+          description: 'Brand of the card. Example visa, master and etc.'
+          example: VISA
+        bin:
+          type: string
+          description: First 6 digits of card
+          example: '444433'
+        trailing_number:
+          type: string
+          description: Last 4 digits of card
+          example: '1111'
+        funding_type:
+          type: string
+          description: 'Card funding type. Example debit, credit and etc.'
+          example: CREDIT
+    PaymentMethodCardRequest:
+      type: object
+      description: Mandatory for card payment method and token is not used.
+      properties:
+        number:
+          type: string
+          maxLength: 768
+          description: Card Number.
+          example: '4444333322221111'
+        expiry_month:
+          type: string
+          maxLength: 768
+          description: Expiry Month.
+          example: '04'
+        expiry_year:
+          type: string
+          maxLength: 768
+          description: Expiry Year.
+          example: '2028'
+        cvc:
+          type: string
+          maxLength: 768
+          description: CVC Data.
+          example: '123'
+        holder_name:
+          type: string
+          maxLength: 768
+          description: Cardholder Name.
+          example: John Doe
+        create_token:
+          type: boolean
+          default: false
+          description: |-
+            Default to false.
+
+            To be set when plain card number is used to create transaction and a permanent token is requested for subsequent transactions.
+    PaymentMethodTokenRequest:
+      type: object
+      description: Mandatory if token is used as payment method or when token is requested upon success result.
+      properties:
+        token_id:
+          type: string
+          description: Token from a previously successful transaction or add payment method.
+          maxLength: 40
+          example: pmt_fb5e60b1821a4037987ad817c33e9c60
+    PaymentMethodCardPresentRequest:
+      type: object
+      description: Mandatory for Card Present transaction
+      properties:
+        number:
+          type: string
+          maxLength: 768
+          description: Card Number.
+          example: '4444333322221111'
+        expiry_month:
+          type: string
+          maxLength: 768
+          description: Expiry Month.
+          example: '04'
+        expiry_year:
+          type: string
+          maxLength: 768
+          description: Expiry Year.
+          example: '2028'
+        cvc:
+          type: string
+          maxLength: 768
+          description: CVC Data.
+          example: '123'
+        sequence_num:
+          type: string
+          maxLength: 768
+          description: |-
+            Mandatory if the sequence number present on the chip card.
+
+            Please note that tag 5F34 is still required in icc_data, if present.
+          example: '01'
+        icc_data:
+          type: string
+          description: |-
+            Hex string representation of ICC Data.
+
+            Mandatory for chip or contactless chip transaction, ie. pan_entry is set to one of the following: chip, contactless_chip.
+          maxLength: 512
+          example: 9F3303204000950500000000009F3704518823719F100706011103A000009F26081E1756ED0E2134E29F36020015820200009C01009F1A0208409A030006219F02060000000020005F2A0208409F0306000000000000
+        track2_data:
+          type: string
+          maxLength: 256
+          description: |-
+            Track2 data in ISO 7813 format.
+
+            Mandatory for magstripe, chip or contactless chip transaction, ie. pan_entry is set to one of the following: magstripe, chip, contactless_chip, contactless_magstripe, fallback_magstripe.
+          example: 4444333322221111=2225111123400001230
+      required:
+        - number
+        - expiry_month
+        - expiry_year
+    TransSubMerchant:
+      type: object
+      description: Mandatory for Payment Facilitator
+      properties:
+        id:
+          type: string
+          maxLength: 15
+          description: |-
+            Sub Merchant ID
+
+            Max length = 15
+          example: '123456789012345'
+        name:
+          type: string
+          maxLength: 32
+          description: Sub Merchant Name
+          example: Acme Inc
+        city:
+          type: string
+          maxLength: 100
+          description: Sub Merchant City
+          example: Kuala Lumpur
+        country:
+          type: string
+          maxLength: 2
+          description: |-
+            Sub Merchant Country
+
+            2 digits country code (ISO 3166)
+          example: MY
+        state:
+          type: string
+          maxLength: 100
+          description: |-
+            Sub Merchant State
+
+            Mandatory for Country = US
+          example: Selangor
+        street:
+          type: string
+          maxLength: 48
+          description: Sub Merchant Address
+          example: Petaling Street
+        postal_code:
+          type: string
+          maxLength: 10
+          description: Sub Merchant Postal Code
+          example: '12345'
+        mcc:
+          type: string
+          maxLength: 4
+          description: Sub Merchant MCC
+          example: '5311'
+    TransDeviceInfo:
+      type: object
+      description: ''
+      properties:
+        app_version:
+          type: string
+          maxLength: 16
+          description: 'App version used for this transaction. Example: 1.0.0'
+          example: 2.2.15
+        platform:
+          type: string
+          maxLength: 16
+          description: 'Device Platform. Example: web, ios, android and etc'
+          example: android
+        spec:
+          type: string
+          maxLength: 32
+          description: 'Device Spec. Example: Chrome 76.0.3809.100'
+          example: Chrome 76.0.3809.100
+        ip:
+          type: string
+          maxLength: 32
+          description: 'IP address of the device. Example: 202.123.100.11'
+          example: 202.123.100.11
+        geo_location:
+          type: object
+          description: Geo location of the POS device
+          properties:
+            latitude:
+              type: string
+              maxLength: 16
+              example: '1.293700'
+            longitude:
+              type: string
+              maxLength: 16
+              example: '103.868550'
+    TransPayerRequest:
+      type: object
+      properties:
+        reference_id:
+          type: string
+          description: This indicate the Payer ID of your system. Such us userName or userID
+          maxLength: 50
+          example: ef1d808f-894b-44c1-9697-cf994993b913
+        name:
+          type: string
+          maxLength: 250
+          description: Name of the payer
+          example: John Doe
+        email:
+          type: string
+          maxLength: 250
+          description: Email of the payer
+          example: john.doe@example.com
+        phone:
+          type: string
+          maxLength: 20
+          description: Phone number of the payer
+          example: '12345678'
+        billing_address:
+          type: object
+          description: Address as per cardholder statement.
+          properties:
+            city:
+              type: string
+              maxLength: 100
+              example: Singapore
+            country:
+              type: string
+              maxLength: 2
+              description: 2 digits country code (ISO 3166)
+              example: SG
+            state:
+              type: string
+              maxLength: 100
+              example: Singapore
+            building_name:
+              type: string
+              maxLength: 100
+              example: Marina One
+            street:
+              type: string
+              maxLength: 100
+              example: 7 Straits View
+            postal_code:
+              type: string
+              maxLength: 10
+              example: '018936'
+        shipping_address:
+          type: object
+          description: Shipping address of the purchase.
+          properties:
+            city:
+              type: string
+              maxLength: 100
+              example: Singapore
+            country:
+              type: string
+              maxLength: 2
+              description: 2 digits country code (ISO 3166)
+              example: SG
+            state:
+              type: string
+              maxLength: 100
+              example: Singapore
+            building_name:
+              type: string
+              maxLength: 100
+              example: Marina One
+            street:
+              type: string
+              maxLength: 100
+              example: 7 Straits View
+            postal_code:
+              type: string
+              maxLength: 10
+              example: '018936'
+    TransPayerResponse:
+      type: object
+      properties:
+        reference_id:
+          type: string
+          example: ef1d808f-894b-44c1-9697-cf994993b913
+    TransAmountRequest:
+      type: object
+      properties:
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: SGD
+          description: ISO 4217 currency format
+        value:
+          type: string
+          maxLength: 16
+          example: '150.00'
+      required:
+        - currency
+        - value
+      description: ''
+    TransAmountResponse:
+      type: object
+      properties:
+        currency:
+          type: string
+          example: SGD
+        value:
+          type: string
+          example: '150.00'
+    TransBrowserInfo:
+      type: object
+      description: Mandatory for Web/Browser Based 3DS Authentication.
+      properties:
+        accept_header:
+          type: string
+          maxLength: 128
+          description: The accept header value of the browser
+          example: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'
+        user_agent:
+          type: string
+          maxLength: 128
+          description: The user agent value of the browser
+          example: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9'
+        language:
+          type: string
+          maxLength: 32
+          description: Can be obtained by using navigator.language
+          example: en-US
+        color_depth:
+          type: integer
+          description: Can be obtained by using screen.colorDepth
+          example: 30
+        screen_height:
+          type: integer
+          description: Can be obtained by using screen.height
+          example: 1120
+        screen_width:
+          type: integer
+          description: Can be obtained by using screen.width
+          example: 1792
+        java_enabled:
+          type: boolean
+          description: This parameter indicates whether the browser is java enable
+        javascript_enabled:
+          type: boolean
+          description: This parameter indicates whether the browser is javascript enable
+        timezone_offset:
+          type: string
+          maxLength: 5
+          description: Timezone offset of the browser
+          example: '-480'
+    TransAccountInfo:
+      type: object
+      description: The account information is used to improve the chance for Frictionless 3DS2 Authentication.
+      x-examples: {}
+      properties:
+        account_age_indicator:
+          type: string
+          enum:
+            - '01'
+            - '02'
+            - '03'
+            - '04'
+            - '05'
+          maxLength: 2
+          description: |-
+            Length of time that the cardholder has had the account.
+
+            Possible values are:
+
+            01 No account (guest check-out)
+
+            02 Created during this transaction
+
+            03 Less than 30 days
+
+            04 30-60 days
+
+            05 More than 60 days
+        account_change_date:
+          type: string
+          maxLength: 8
+          minLength: 8
+          description: |-
+            Date that the cardholder's account was last changed.
+
+            Accepted date format is YYYYMMDD.
+          example: YYYYMMDD
+        account_change_indicator:
+          type: string
+          enum:
+            - '01'
+            - '02'
+            - '03'
+            - '04'
+          maxLength: 2
+          description: |-
+            Length of time since the cardholder's account information was last changed.
+
+            Possible values are:
+
+            01: Changed during this transaction
+
+            02: Less than 30 days
+
+            03: 30 to 60 days
+
+            04: More than 60 days
+        account_date:
+          type: string
+          maxLength: 8
+          minLength: 8
+          description: |-
+            Date that the cardholder opened the account.
+
+            Accepted date format is YYYYMMDD.
+          example: YYYYMMDD
+        account_password_change_date:
+          type: string
+          minLength: 8
+          maxLength: 8
+          description: |-
+            Date that cardholder's account had a password change or account reset.
+
+            Accepted date format is YYYYMMDD.
+          example: YYYYMMDD
+        account_password_change_indicator:
+          type: string
+          enum:
+            - '01'
+            - '02'
+            - '03'
+            - '04'
+            - '05'
+          maxLength: 2
+          description: |-
+            Indicates the length of time since the cardholder's account had a password change or account reset.
+
+            Possible values are:
+
+            01: No change
+
+            02: Changed during this transaction
+
+            03: Less than 30 days
+
+            04: 30-60 days
+
+            05: More than 60 days
+        account_purchase_count:
+          type: number
+          description: Number of purchases with this cardholder account during the past 6 months. Max number is 9999.
+        account_provisioning_attempts:
+          type: number
+          description: Number of Add Card attempts for the account in the last 24 hours. Max number is 999.
+        account_day_transactions:
+          type: number
+          description: Number of transactions (successful and abandoned) for this cardholder account across all payment accounts in the past 24 hours. Max number is 999.
+        account_year_transactions:
+          type: number
+          description: Number of transactions (successful and abandoned) for this cardholder account across all payment accounts in the past year. Max number is 9999.
+        payment_account_age:
+          type: string
+          maxLength: 8
+          minLength: 8
+          description: |-
+            Date that this payment method was enrolled in the cardholder's account.
+
+            Accepted date format is YYYYMMDD.
+          example: YYYYMMDD
+        payment_account_age_indicator:
+          type: string
+          enum:
+            - '01'
+            - '02'
+            - '03'
+            - '04'
+            - '05'
+          maxLength: 2
+          description: |-
+            Indicates the length of time that this payment method was enrolled in the cardholder's account.
+
+            Possible values are:
+
+            01: No account (guest check-out)
+
+            02: Created during this transaction
+
+            03: Less than 30 days
+
+            04: 30-60 days
+
+            05: More than 60 days
+        ship_address_usage_date:
+          type: string
+          minLength: 8
+          maxLength: 8
+          description: |-
+            Date when the shipping address used for this transaction was first used.
+
+            Accepted date format is YYYYMMDD.
+          example: YYYYMMDD
+        ship_address_usage_indicator:
+          type: string
+          enum:
+            - '01'
+            - '02'
+            - '03'
+            - '04'
+          maxLength: 2
+          description: |-
+            Indicates the length of time since the shipping address used for this transaction was first used.
+
+            Possible values are:
+
+            01: This transaction
+
+            02: Less than 30 days
+
+            03: 30-60 days
+
+            04: More than 60 days
+        ship_name_indicator:
+          type: string
+          enum:
+            - '01'
+            - '02'
+          maxLength: 2
+          description: |-
+            Indicates if the Cardholder Name on the account is identical to the shipping Name used for this transaction.
+
+            Possible values are:
+
+            01: Account Name identical to shipping Name
+
+            02: Account Name different than shipping Name
+        suspicious_account_activity:
+          type: boolean
+          description: Indicates whether suspicious activity (including previous fraud) on the cardholder account has previously been observed.
+    Trans3dsData:
+      type: object
+      description: Merchant may perform 3DS authentication using third party MPI/3DS Server and include the result here.
+      properties:
+        xid:
+          type: string
+          description: To be used for 3D Secure v1 only
+          maxLength: 64
+          example: YXV0aCB0eG4gaWRzIGFyZSBmdW4=
+        ds_trans_id:
+          type: string
+          description: To be used for 3D Secure v2 only
+          maxLength: 64
+          example: 362DF058-6061-47F1-A504-CACCBDF422B7
+        status:
+          type: string
+          enum:
+            - 'Y'
+            - 'N'
+            - A
+            - U
+          maxLength: 1
+          description: 'Y, N, A, U'
+          example: 'Y'
+        eci:
+          type: string
+          maxLength: 3
+          description: The electronic commerce indication value.
+          example: '05'
+        auth_value:
+          type: string
+          maxLength: 32
+          description: CAVV in 3D Secure v1; Authentication Value in 3D Secure v2.
+          example: M2RzMiBpcyBzdXBlcmF3ZXNvbWU=
+        auth_algo:
+          type: string
+          maxLength: 32
+          description: CAVV Algo in 3D Secure v1
+          example: '1'
+        version:
+          type: string
+          maxLength: 16
+          description: 'This indicate 3DS version value. Example: 1.0.2, 2.1.0, 2.2.0'
+          example: 2.1.0
+    TransStatus:
+      type: string
+      enum:
+        - pending
+        - action required
+        - failed
+        - succeeded
+      description: 'Status of the request: pending/failed/action required/succeeded'
+      example: succeeded
+    TransResult:
+      type: object
+      description: Response result indicate the status of the transaction request whether it is successful authorise or fail to authorise with reason.
+      properties:
+        code:
+          type: string
+          description: GrabLink response code
+          example: S0000
+        message:
+          type: string
+          description: GrabLink response message
+          example: Success
+        raw_message:
+          type: string
+          description: Acquirer response message
+          example: Success
+    TerminalData:
+      type: object
+      properties:
+        terminal_id:
+          type: string
+          description: 'Terminal ID, to be assigned to each POS device'
+          example: 15194a1d5cdb48e3875f78575009c247
+          maxLength: 64
+    TerminalDataAdditional:
+      type: object
+      properties:
+        pos_entry_mode:
+          type: object
+          properties:
+            pan_entry:
+              type: string
+              enum:
+                - unknown
+                - manual
+                - magstripe
+                - chip
+                - contactless_chip
+                - contactless_magstripe
+                - fallback_magstripe
+              maxLength: 32
+              example: contactless_chip
+            pin_entry:
+              type: string
+              enum:
+                - unknown
+                - enabled
+                - disabled
+                - error
+              maxLength: 16
+              example: disabled
+        pos_condition_code:
+          type: string
+          enum:
+            - attended
+            - unattended
+            - mail_order
+          maxLength: 16
+          example: attended
+    TransTerminalDataRequest:
+      allOf:
+        - $ref: '#/components/schemas/TerminalData'
+        - $ref: '#/components/schemas/TerminalDataAdditional'
+    ModificationResponse:
+      type: object
+      properties:
+        action_time:
+          type: string
+          description: |-
+            ISO-8601 standard date-time format (e.g. "2019-09-26T07:58:30.996+0200")
+
+            Datetime of this action happen
+          example: '2019-09-26T07:58:30.996+0200'
+        action_id:
+          type: string
+          description: Unique ID for the action performed against this transaction
+          example: 7d1f9274a64c4ede8bf1476de926e9c1
+        merchant_action_id:
+          type: string
+          description: Echo from request message
+          example: 581c6281cdf747c8b4de5ee2d9408388
+        status:
+          $ref: '#/components/schemas/TransStatus'
+        amount:
+          $ref: '#/components/schemas/TransAmountResponse'
+        terminal_data:
+          $ref: '#/components/schemas/TerminalData'
+        result:
+          $ref: '#/components/schemas/TransResult'
+    ErrorResponse:
+      type: object
+      properties:
+        target:
+          type: string
+          example: ''
+        reason:
+          type: string
+          example: invalid argument
+        message:
+          type: string
+          example: Card.Number failed validation
+    WebhookRequest:
+      type: object
+      properties:
+        action_time:
+          type: string
+          example: '2019-09-26T07:58:30.996+0200'
+        merchant_action_id:
+          type: string
+          example: c09adcc3f667454b95f7502b74a0ac32
+        amount:
+          $ref: '#/components/schemas/TransAmountResponse'
+        result:
+          $ref: '#/components/schemas/TransResult'
+        event_type:
+          type: string
+          enum:
+            - transaction.success
+            - add_payment_method.success
+            - delete_payment_method.success
+            - capture.success
+            - refund.success
+            - cancel.success
+            - transaction.fail
+            - add_payment_method.fail
+            - delete_payment_method.fail
+            - capture.fail
+            - refund.fail
+            - cancel.fail
+        status:
+          $ref: '#/components/schemas/TransStatus'
+        terminal_data:
+          type: object
+          properties:
+            terminal_id:
+              type: string
+              example: 15194a1d5cdb48e3875f78575009c247
+        action_id:
+          type: string
+          example: 073c53fc4fba4c0b9a3c0b04fae0fe1c
+    WebhookRequestAdditional:
+      type: object
+      properties:
+        merchant_order_num:
+          type: string
+          example: SW21081200002313
+        trans_id:
+          type: string
+          example: 3ac51819b9bf4e6998f19cf6269b2dc1
+        auth_code:
+          type: string
+          example: '123456'
+        cvc_result:
+          type: string
+          example: 'Y'
+        avs_result:
+          type: string
+          example: S
+        acquirer_reference:
+          type: string
+          example: '123456789012'
+        payer:
+          $ref: '#/components/schemas/TransPayerResponse'
+        payment_method:
+          type: object
+          properties:
+            card:
+              $ref: '#/components/schemas/PaymentMethodCardResponse'
+            token:
+              $ref: '#/components/schemas/PaymentMethodTokenResponse'
+            card_present:
+              $ref: '#/components/schemas/PaymentMethodCardPresentResponse'
+            fingerprint:
+              type: string
+              example: cde2399feb94478dab841439d0c7a216
+        metadata:
+          type: object
+    OrderResult:
+      type: object
+      x-examples: {}
+      properties:
+        order:
+          type: object
+          properties:
+            order_id:
+              type: string
+              example: 1020c4a4bb8f4bdba76bcf5b71614eba
+            merchant_order_num:
+              type: string
+              example: SW21081200002313
+            created_at:
+              type: string
+              example: '2019-09-26T07:58:30.996+0200'
+            status:
+              type: string
+              example: success
+            payer:
+              $ref: '#/components/schemas/TransPayerResponse'
+            cart:
+              type: object
+              properties:
+                cart_currency:
+                  type: string
+                  example: SGD
+                cart_total:
+                  type: string
+                  example: '150.00'
+            metadata:
+              type: object
+        transaction:
+          type: object
+          properties:
+            trans_id:
+              type: string
+              example: 504a2276af6d44b2b93fba24e247714d
+            action_time:
+              type: string
+              example: '2019-09-26T07:58:30.996+0200'
+            merchant_action_id:
+              type: string
+              example: 9f5e18984ec44d55b7dee32f418e9057
+            amount:
+              $ref: '#/components/schemas/TransAmountResponse'
+            result:
+              $ref: '#/components/schemas/TransResult'
+            auth_code:
+              type: string
+              example: '123456'
+            cvc_result:
+              type: string
+              example: 'Y'
+            avs_result:
+              type: string
+              example: S
+            acquirer_reference:
+              type: string
+              example: '123456789012'
+            payer:
+              $ref: '#/components/schemas/TransPayerResponse'
+            payment_method:
+              type: object
+              properties:
+                card:
+                  $ref: '#/components/schemas/PaymentMethodCardResponse'
+                token:
+                  $ref: '#/components/schemas/PaymentMethodTokenResponse'
+                fingerprint:
+                  type: string
+                  example: cde2399feb94478dab841439d0c7a216
+            status:
+              $ref: '#/components/schemas/TransStatus'
+    TransactionEvent:
+      allOf:
+        - $ref: '#/components/schemas/WebhookRequest'
+        - $ref: '#/components/schemas/WebhookRequestAdditional'
+      example:
+        action_time: '2021-09-22T05:19:02Z'
+        merchant_action_id: 68420ccc49b54d09ba8665419460aa66
+        amount:
+          currency: SGD
+          value: '100.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: transaction.success
+        status: succeeded
+        action_id: '2109220518560101854303'
+        merchant_order_num: '211225123456'
+        trans_id: '2109220518560101854303'
+        auth_code: '007999'
+        cvc_result: 1 Matches
+        acquirer_reference: '000000345244'
+        payment_method:
+          card:
+            brand: mc
+            bin: '520698'
+            trailing_number: '8993'
+            funding_type: DEBIT
+            variant: consumer
+            issuing_country: MX
+            issuing_bank: 'Banco Nacional de Mexico, S.A.'
+          fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+    CaptureEvent:
+      allOf:
+        - $ref: '#/components/schemas/WebhookRequest'
+      example:
+        action_time: '2021-09-22T05:34:59+00:00'
+        merchant_action_id: 9a4b7c8e833c47e4ba91a5ff03bda4a1
+        amount:
+          currency: SGD
+          value: '100.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: capture.success
+        status: succeeded
+        action_id: '2109220534580101854616'
+    RefundEvent:
+      allOf:
+        - $ref: '#/components/schemas/WebhookRequest'
+      example:
+        action_time: '2021-09-22T05:39:14+00:00'
+        merchant_action_id: ac1ed0538b9248429381a2ef8f71702a
+        amount:
+          currency: SGD
+          value: '70.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: refund.success
+        status: succeeded
+        action_id: '2109220539100101854695'
+    CancelEvent:
+      allOf:
+        - $ref: '#/components/schemas/WebhookRequest'
+      example:
+        action_time: '2021-09-22T05:27:13+00:00'
+        merchant_action_id: c1adb79775db477196103d87b2ad6e0c
+        amount:
+          currency: SGD
+          value: '100.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: cancel.success
+        status: succeeded
+        action_id: '2109220527070101854463'
+    OrderEvent:
+      allOf:
+        - $ref: '#/components/schemas/OrderResult'
+      example:
+        order:
+          order_id: 1020c4a4bb8f4bdba76bcf5b71614eba
+          merchant_order_num: '211225123456'
+          created_at: '2021-09-22T09:50:59+00:00'
+          status: success
+          payer:
+            reference_id: john.doe@grab.com
+          cart:
+            cart_currency: SGD
+            cart_total: '13.00'
+        transaction:
+          trans_id: '2109220952370101974135'
+          action_time: '2021-09-22T09:52:37+00:00'
+          merchant_action_id: 9f5e18984ec44d55b7dee32f418e9057
+          amount:
+            currency: SGD
+            value: '13.00'
+          result:
+            code: S0000
+            message: Success
+            raw_message: Success
+          auth_code: '009837'
+          cvc_result: 1 Matches
+          acquirer_reference: '000000375523'
+          payer:
+            reference_id: john.doe@grab.com
+          payment_method:
+            card:
+              brand: mc
+              bin: '520698'
+              trailing_number: '8993'
+              funding_type: DEBIT
+              variant: Debit MasterCard
+              issuing_country: MX
+              issuing_bank: 'Banco Nacional de Mexico, S.A.'
+            fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+          status: succeeded
+    TerminalBatch:
+      type: object
+      properties:
+        terminal_data:
+          $ref: '#/components/schemas/TerminalData'
+        created_at:
+          type: string
+          example: '2019-09-26T07:58:30.996+0200'
+        closed_at:
+          type: string
+          example: '2019-09-26T09:58:30.996+0200'
+        batch_code:
+          type: string
+          description: Batch Code of the requested batch
+          example: '12'
+    TerminalBatchInfo:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Total count of transactions in the batch
+          example: 10
+        amount:
+          $ref: '#/components/schemas/TransAmountResponse'
+        batch_info:
+          type: array
+          items:
+            type: object
+            properties:
+              payment_mode:
+                type: string
+                description: visa/mastercard
+                example: visa
+              auth_count:
+                type: integer
+                description: Total count of immediately captured authorisation eligible for batch closing
+                example: 0
+              auth_amount:
+                type: string
+                example: '0.00'
+              capture_count:
+                type: integer
+                description: Total count of manual capture eligible for batch closing
+                example: 8
+              capture_amount:
+                type: string
+                example: '160.00'
+              refund_count:
+                type: integer
+                description: Total count of refund eligible for batch closing
+                example: 2
+              refund_amount:
+                type: string
+                example: '10.00'
+        status:
+          type: string
+          description: 'Batch status: open/closed'
+          example: open
+          enum:
+            - open
+            - closed
+    TerminalBatchSummary:
+      allOf:
+        - $ref: '#/components/schemas/TerminalBatch'
+        - $ref: '#/components/schemas/TerminalBatchInfo'
+    TerminalBatchClosing:
+      allOf:
+        - $ref: '#/components/schemas/TerminalBatchSummary'
+        - type: object
+          properties:
+            result:
+              $ref: '#/components/schemas/TransResult'
+  securitySchemes:
+    API Key:
+      name: X-Api-Key
+      type: apiKey
+      in: header
+  parameters:
+    Content-Type:
+      name: Content-Type
+      description: application/json
+      in: header
+      required: true
+      schema:
+        type: string
+        description: application/json
+        maxLength: 32
+    Signature:
+      name: Signature
+      description: HMAC-SHA512
+      in: header
+      required: true
+      schema:
+        type: string
+        description: HMAC-SHA512
+        maxLength: 256
+        example: <signature>
+    Webhook-Signature:
+      name: Webhook-Signature
+      description: HMAC-SHA512
+      in: header
+      required: true
+      schema:
+        type: string
+        description: HMAC-SHA512
+        maxLength: 256
+        example: <signature>
+    TimeStamp:
+      name: Timestamp
+      description: Unix Timestamp
+      in: header
+      required: true
+      schema:
+        type: string
+        description: UNIX Timestamp
+        maxLength: 16
+        example: '1620978893'
+    Idempotency-Key:
+      name: Idempotency-Key
+      description: Unique value generated by the merchant used to identify subsequent retries of the same request as long as other details remain the same.
+      in: header
+      schema:
+        type: string
+        maxLength: 64
+        example: 925bc7ff-557b-4594-a95a-83de0c078664
+    X-Request-ID:
+      name: X-Request-ID
+      description: Unique Message ID
+      in: header
+      schema:
+        type: string
+        format: uuid
+        maxLength: 64
+        example: b6c78e84-beb1-461e-9a28-9c96f7b6ae37
+    X-Api-Key:
+      name: X-Api-Key
+      description: API Key
+      in: header
+      required: true
+      schema:
+        type: string
+        maxLength: 256
+        example: ec46ea208d224d579a34279c5dd916dc
+tags:
+  - name: Transaction
+  - name: Hosted Payment Page
+  - name: Terminal
+  - name: Webhooks
+    x-displayName: Webhooks
+    description: |
+      ## Transaction API callback
+
+      Following request-body is send as POST request on the URL used to register the callback:
+
+      <SchemaDefinition schemaRef="#/components/schemas/TransactionEvent" />
+
+      ## Capture API callback
+
+      Following request-body is send as POST request on the URL used to register the callback:
+
+      <SchemaDefinition schemaRef="#/components/schemas/CaptureEvent" />
+
+      ## Refund API callback
+
+      Following request-body is send as POST request on the URL used to register the callback:
+
+      <SchemaDefinition schemaRef="#/components/schemas/RefundEvent" />
+
+      ## Cancel API callback
+
+      Following request-body is send as POST request on the URL used to register the callback:
+
+      <SchemaDefinition schemaRef="#/components/schemas/CancelEvent" />
+
+      ## Order API callback
+
+      Following request-body is send as POST request on the URL used to register the callback:
+
+      <SchemaDefinition schemaRef="#/components/schemas/OrderEvent" />
+  - name: Test Cards
+    x-displayName: Test Cards
+    description: |
+      Following card details can be used to test your integration in staging environment:
+
+      - VISA: 4564610000000170 (Expiry Date: 12/2022 CVV: 123)
+      - MASTERCARD: 5206987603858993 (Expiry Date:12/2022 CVV: 123)
+  - name: Result Codes
+    x-displayName: Result Codes
+    description: |
+      - S0000 - Success
+      - S0001 - Received
+      - S0002 - Processing
+      - S0003 - funds holding for immediate capture
+      - S0004 - SecurePlus
+      - S0005 - RedirectShopper
+      - S0006 - Pending
+      - S0007 - Authentication not supported
+      - S0008 - Authentication finished
+      - S0009 - Expired Authentication
+      - G0001 - Unknown
+      - G0002 - Internal error
+      - G0003 - Unable To Process
+      - G0004 - Payment details are not supported
+      - G0005 - Idempotency timeout
+      - G0007 - Invalid request
+      - G0010 - Problem parsing request
+      - G0011 - Timeout
+      - G0012 - MerchantTransID should be unique
+      - E0096 - System Error
+      - E1001 - 3d-secure: Authentication failed
+      - E0001 - Refer to card issuer
+      - E0002 - Refer to card issuer, special condition
+      - E0003 - Invalid Merchant
+      - E0004 - Capture Card
+      - E0005 - Do not honor
+      - E0006 - Error
+      - E0007 - Pick Up Card, Special Conditions
+      - E0008 - Honor with ID
+      - E0009 - Request in Progress
+      - E0010 - Partial Approval
+      - E0012 - Invalid Transaction
+      - E0013 - Invalid Amount
+      - E0014 - Invalid Card Number
+      - E0015 - Invalid Issuer
+      - E0017 - Customer Cancellation
+      - E0018 - Customer Dispute
+      - E0019 - Re-enter Transaction or Transaction has expired
+      - E0020 - Invalid Response
+      - E0021 - No Action Taken
+      - E0022 - Suspected Malfunction
+      - E0023 - Unacceptable Transaction Fee
+      - E0024 - File Update Not Supported by the Receiver
+      - E0025 - Unable to Locate Record on File
+      - E0026 - Duplicate file update record
+      - E0027 - File Update Field Edit Error
+      - E0028 - File Update File Locked Out
+      - E0029 - File Update not Successful
+      - E0030 - Format Error
+      - E0031 - Bank not Supported by Switch
+      - E0032 - Completed Partially
+      - E0039 - No CREDIT Account
+      - E0040 - Requested Function not Supported
+      - E0041 - Lost Card
+      - E0042 - No Universal Value/Amount
+      - E0043 - Stolen Card
+      - E0044 - No Investment Account
+      - E0051 - Insufficient funds/over credit limit
+      - E0052 - No Cheque Account
+      - E0053 - No Savings Account
+      - E0054 - Expired Card
+      - E0055 - Invalid PIN
+      - E0056 - No Card Record
+      - E0057 - Transaction not permitted to issuer/cardholder
+      - E0058 - Transaction not permitted to acquirer/terminal
+      - E0059 - Suspected Fraud
+      - E0060 - Card Acceptor Contact Acquirer 
+      - E0061 - Exceeds withdrawal amount limit
+      - E0062 - Restricted card
+      - E0063 - Security violation
+      - E0064 - Transaction does not fulfill AML requirements
+      - E0065 - Exceeds withdrawal count limit
+      - E0066 - Card Acceptor Call Acquirer Security
+      - E0067 - Hard Capture—Pick Up Card at ATM
+      - E0068 - Response Received Too Late / Timeout
+      - E0070 - Contact Card Issuer
+      - E0075 - Allowable number of PIN tries exceeded
+      - E0078 - Invalid/nonexistent account specified (general)
+      - E0080 - Credit issuer unavailable
+      - E0082 - No security model
+      - E0083 - No accounts
+      - E0086 - PIN validation not possible
+      - E0091 - Authorization Platform or issuer system inoperative
+      - E0092 - Destination cannot be found for routing / Unable to route transaction
+      - E0093 - Transaction cannot be completed; violation of law
+      - E0094 - Duplicate Transmission/Invoice
+      - E001A - Additional customer authentication required
+      - E00N0 - Unable to authorize
+      - E00N7 - Decline for CVV2 failure
+      - E00R1 - Issuer initiated a stop payment (revocation order) for the Authorization
+      - E00R3 - Issuer initiated a stop payment (revocation order) for all Authorizations
+      - E0187 - Deny New Card Issued
+      - E0900 - Advice accepted
+      - E0911 - Card Issuer timed out
+      - E0912 - Host unavailable
+      - E1000 - Issuer Catch All Response
+      - E1016 - Issuer does not allow online gambling payout
+      - E1017 - Issuer does not allow original credit transaction
+      - E1018 - Issuer does not allow money transfer payout
+      - E1019 - Issuer does not allow non-money transfer payout
+      - E1020 - Invalid amount
+      - E1021 - Total amount limit reached
+      - E1084 - No PBF
+      - E1085 - PBF update error
+      - E1087 - Bad Track Data (invalid CVV and/or expiry date)
+      - E1088 - Unable to Dispense/process
+      - E1089 - Administration Error
+      - E1090 - Cut-off in Progress
+      - E1095 - Reconcile Error
+      - E1097 - Reconciliation Totals Reset
+      - E1098 - MAC Error
+      - E10O5 - Pin Required
+      - E10P1 - Over Daily Limit
+      - E10P9 - Limit exceeded. Enter a lesser value.
+      - E10S4 - PTLF Full
+      - P0001 - Generic error
+      - P0002 - Config error
+      - P0003 - Internal error
+      - P0004 - Fraud error
+      - P0005 - Transaction not supported
+      - P0006 - Transaction not found
+      - Vxxx - Validation error. Please refer to Result Message for more details.
+      - Cxxx - Configuration error. Please refer to Result Message for more details.
