@@ -3159,7 +3159,7 @@ components:
           example: 10
         amount:
           $ref: '#/components/schemas/TransAmountResponse'
-        batch_info:
+        batch_summary:
           type: array
           items:
             type: object
