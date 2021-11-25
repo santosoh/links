@@ -296,9 +296,9 @@ paths:
                 require_3ds:
                   type: string
                   description: |-
-                    This parameter indicates if you want to perform 3DS for a transaction or not. Allowed values: true or false.
+                    This parameter indicates if you want to perform 3DS for a transaction or not. Allowed values: true, false, or empty string - ie. ''.
 
-                    If not set, depend on the risk level of the transaction, 3DS might be required.
+                    If not set, empty string will be used as default, and depend on the risk level of the transaction, 3DS might be required.
                   enum:
                     - 'true'
                     - 'false'
@@ -1406,9 +1406,9 @@ paths:
                 require_3ds:
                   type: string
                   description: |-
-                    This parameter indicates if you want to perform 3DS for a transaction or not. Allowed values: true or false.
+                    This parameter indicates if you want to perform 3DS for a transaction or not. Allowed values: true, false, or empty string - ie. ''.
 
-                    If not set, depend on the risk level of the transaction, 3DS might be required.
+                    If not set, empty string will be used as default, and depend on the risk level of the transaction, 3DS might be required.
                   enum:
                     - 'true'
                     - 'false'
