@@ -302,7 +302,6 @@ paths:
                   enum:
                     - 'true'
                     - 'false'
-                    - '""'
                   maxLength: 8
                 return_url:
                   type: string
@@ -1413,7 +1412,6 @@ paths:
                   enum:
                     - 'true'
                     - 'false'
-                    - '""'
                   maxLength: 8
                 payer:
                   $ref: '#/components/schemas/TransPayerRequest'
