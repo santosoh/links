@@ -226,7 +226,7 @@ paths:
                     status: action required
                     next_action:
                       type: redirection_url
-                      redirection_url: 'https://links-checkout.stg-myteksi.com/api/3ds/2110250538460100030091'
+                      redirection_url: 'https://paysuite.stg-myteksi.com/api/3ds/2110250538460100030091'
                     metadata:
                       key: value
         '400':
@@ -463,6 +463,33 @@ paths:
                       create_token: true
                   metadata:
                     key: value
+              Card Present:
+                value:
+                  merchant_action_id: aed7056f43da48c098ded80f704edebb
+                  merchant_order_num: '123456'
+                  amount:
+                    currency: SGD
+                    value: '100.00'
+                  capture_method: immediate
+                  terminal_data:
+                    terminal_id: 69838b2ea38c4356a586c883a69ed302
+                    pos_entry_mode:
+                      pan_entry: contactless_chip
+                      pin_entry: disabled
+                    pos_condition_code: attended
+                  device_info:
+                    ip: 202.123.100.11
+                    geo_location:
+                      latitude: '1.299949'
+                      longitude: '103.787415'
+                  payment_method:
+                    card_present:
+                      number: '5206987603858993'
+                      expiry_month: '12'
+                      expiry_year: '2022'
+                      sequence_num: '00'
+                      icc_data: 82023C008407A0000000031010950500000080009A031810179C01005F2A0200965F3401009F02060000000000069F03060000000000009F090200969F100706020A03A0B8069F1A0200969F1E0830313033333237339F2608A971BC7E93CE39EA9F2701809F3303E0B8C89F34031E03009F3501229F360200B09F37042ADDBBAD9F4104000000049F420207029F530152
+                      track2_data: 5206987603858993=22032017000001184900
         description: ''
       callbacks:
         transactionCallback:
@@ -1368,7 +1395,7 @@ paths:
                       cart_currency: SGD
                       cart_total: '13.00'
                     hpp:
-                      redirect_url: 'https://links-checkout.stg-myteksi.com/pay/bca1cc50d972461886ce6b6d950375ef'
+                      redirect_url: 'https://paysuite.stg-myteksi.com/pay/bca1cc50d972461886ce6b6d950375ef'
         '400':
           description: Bad Request
           content:
