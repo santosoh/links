@@ -952,7 +952,7 @@ paths:
       tags:
         - Transaction
     put:
-      summary: Update Transaction (Additional Info)
+      summary: Update Transaction - Additional Info (to be confirmed)
       operationId: put-transaction-id
       responses:
         '200':
@@ -1395,7 +1395,7 @@ paths:
   /v1/transaction/search:
     parameters: []
     post:
-      summary: Search (coming soon)
+      summary: Search (to be confirmed)
       operationId: post-v1-transaction-search
       responses:
         '200':
@@ -2068,28 +2068,6 @@ paths:
         - $ref: '#/components/parameters/X-Api-Key'
       tags:
         - Terminal
-  '/v1/terminal/{terminal_id}/activate':
-    parameters:
-      - schema:
-          type: string
-          example: 15194a1d5cdb48e3875f78575009c247
-        name: terminal_id
-        in: path
-        required: true
-        description: Terminal ID
-    post:
-      summary: Activation (to be confirmed)
-      operationId: post-v1-terminal-terminal_id-reversal
-      description: Activation
-      parameters:
-        - $ref: '#/components/parameters/Content-Type'
-        - $ref: '#/components/parameters/Signature'
-        - $ref: '#/components/parameters/TimeStamp'
-        - $ref: '#/components/parameters/Idempotency-Key'
-        - $ref: '#/components/parameters/X-Request-ID'
-        - $ref: '#/components/parameters/X-Api-Key'
-      tags:
-        - Terminal
   '/v1/terminal/{terminal_id}/reversal':
     parameters:
       - schema:
@@ -2101,7 +2079,7 @@ paths:
         description: Terminal ID
     post:
       summary: Reversal (to be confirmed)
-      operationId: post-v1-terminal-reversal
+      operationId: post-v1-terminal-terminal_id-reversal
       responses:
         '200':
           description: OK
