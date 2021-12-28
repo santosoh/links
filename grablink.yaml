@@ -957,10 +957,6 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModificationResponse'
       parameters:
         - $ref: '#/components/parameters/Content-Type'
         - $ref: '#/components/parameters/Signature'
