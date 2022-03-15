@@ -102,6 +102,12 @@ info:
     HTTP 200 is a valid response. The expected action status would be either ‘succeeded’ or ‘failed’. However, there are occasions when a ‘pending’ status might be returned in the response message.
 
     When ‘pending’ status is received, GET Transaction API should be used to retrieve the latest status of the transaction subsequently. Please refer to the GET Transaction API specification for more details.
+
+    ## 'Action Required' Status Handling
+
+    By default, when 'action required' status is received and the merchant needs to redirect the browser to 'redirection_url' for browser based authentication such as 3DS authentication, the payment authorisation will be automatically performed (whenever applicable) upon receiving Challenge Result as part of Create Transaction API processing, and merchant will be able to receive the result via webhook callback or by using GET Transaction API.
+
+    However, depending on how the merchant is configured, Complete Transaction API could be used to manually authorise the payment instead, after Challenge is performed. Please contact GrabLink if this is required.
   contact:
     email: grablink.engineering@grab.com
     name: GrabLink Engineering
@@ -560,8 +566,6 @@ paths:
         Create new transaction. Unique 'merchant_action_id' is required for every new transaction request. The recommendation is to use UUID, but any other algorithms that ensure uniqueness are also acceptable. 
 
         The response message includes 'trans_id', that should be used in subsequent action related to that particular transaction, eg. capture, refund or cancel. It also includes 'status', that can be used to determine whether a transaction is succeeded, failed, pending or further action is required.
-
-        When the merchant is required to redirect the browser to 'redirection_url' for browser based authentication such as 3DS authentication, as part of Create Transaction API processing, the payment authorisation will be automatically performed (whenever applicable) upon receiving Challenge Result and merchant will be able to receive the result via webhook callback or by using GET Transaction API.
       parameters:
         - $ref: '#/components/parameters/Content-Type'
         - $ref: '#/components/parameters/Signature'
@@ -732,11 +736,6 @@ paths:
                   type: string
                   description: 'Encoded data of 3DS Challenge Result, which is included as query string parameter when the browser is redirected to the Return URL set in Create Transaction API request.'
                   example: eyJ0aHJlZURTU2VydmVyVHJhbnNJRCI6IjVmYzI3Y2VjLTliMTEtNDk5Ny04YWE3LTQ1NzAxYmJiZDk2YyIsImFjc1RyYW5zSUQiOiJjOGYyYjJmNy00OTRhLTRiZDMtOGZjMi1lYzUzZmRkNDc1YWIiLCJtZXNzYWdlVHlwZSI6IkNSZXMiLCJtZXNzYWdlVmVyc2lvbiI6IjIuMS4wIiwidHJhbnNTdGF0dXMiOiJZIn0=
-                merchant_action_id:
-                  type: string
-                  description: 'Unique transaction id assigned by merchant for each request. '
-                  maxLength: 32
-                  example: c09adcc3f667454b95f7502b74a0ac32
                 three_ds_data:
                   type: object
                   properties:
@@ -771,9 +770,7 @@ paths:
                 - $ref: '#/components/parameters/Webhook-Signature'
                 - $ref: '#/components/parameters/TimeStamp'
       description: |-
-        As part of Create Transaction API processing, the payment authorisation will be automatically performed (whenever applicable) upon receiving Challenge Result and merchant will be able to receive the result via webhook callback or by using GET Transaction API.
-
-        However, depending on how the merchant is configured, Complete Transaction API could be used to manually authorise the payment instead, after ThreeDS Challenge is performed. Unique 'merchant_action_id' is required for every new transaction request.
+        Complete Transaction API could be used to manually authorise the payment, after Challenge is performed. Please contact GrabLink if this is required.
 
         Original 'trans_id' from Create Transaction response should be used when calling this API, and applicable only if that particular transaction has not been previously authorised, captured, refunded or cancelled. 
 
