@@ -734,10 +734,10 @@ paths:
             schema:
               type: object
               properties:
-                auth_response:
+                auth_resp_id:
                   type: string
-                  description: 'Encoded data of 3DS Challenge Result, which is included as query string parameter when the browser is redirected to the Return URL set in Create Transaction API request.'
-                  example: eyJ0aHJlZURTU2VydmVyVHJhbnNJRCI6IjVmYzI3Y2VjLTliMTEtNDk5Ny04YWE3LTQ1NzAxYmJiZDk2YyIsImFjc1RyYW5zSUQiOiJjOGYyYjJmNy00OTRhLTRiZDMtOGZjMi1lYzUzZmRkNDc1YWIiLCJtZXNzYWdlVHlwZSI6IkNSZXMiLCJtZXNzYWdlVmVyc2lvbiI6IjIuMS4wIiwidHJhbnNTdGF0dXMiOiJZIn0=
+                  description: 'A unique identifier which is included as query string parameter when the browser is redirected to the Return URL, and used as referrence key to obtain the 3DS Challenge Result received from ACS.'
+                  example: b5cd837fb679458abd56fad58f8a27be
                 three_ds_data:
                   type: object
                   properties:
@@ -748,7 +748,7 @@ paths:
             examples:
               Example:
                 value:
-                  auth_response: eyJ0aHJlZURTU2VydmVyVHJhbnNJRCI6IjVmYzI3Y2VjLTliMTEtNDk5Ny04YWE3LTQ1NzAxYmJiZDk2YyIsImFjc1RyYW5zSUQiOiJjOGYyYjJmNy00OTRhLTRiZDMtOGZjMi1lYzUzZmRkNDc1YWIiLCJtZXNzYWdlVHlwZSI6IkNSZXMiLCJtZXNzYWdlVmVyc2lvbiI6IjIuMS4wIiwidHJhbnNTdGF0dXMiOiJZIn0=
+                  auth_resp_id: b5cd837fb679458abd56fad58f8a27be
                   three_ds_data:
                     sms_code: '123456'
         description: ''
