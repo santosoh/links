@@ -1903,6 +1903,9 @@ paths:
                             item_option:
                               type: string
                               example: White; 256gb
+                  metadata:
+                    description: 'Up to 20 keys, with key names up to 200 characters long and values up to 200 characters long.'
+                    type: object
       description: Retrieve details and overall status of a Hosted Payment Page Order. Original 'order_id' from Create Order response should be used when calling this API.
       parameters:
         - $ref: '#/components/parameters/Signature'
