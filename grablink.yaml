@@ -2839,7 +2839,7 @@ components:
       description: |-
         If 3DS is requested, merchant may send the necessary information such as device data, challenge window size preference, etc.
 
-        Merchant may also perform 3DS authentication using third party MPI/3DS Server and include the result here.
+        Merchant may also perform 3DS authentication using third party MPI/3DS Server and include the result here. In this scenario, please set 'require_3ds' to 'false'.
       properties:
         xid:
           type: string
