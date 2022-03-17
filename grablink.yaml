@@ -368,6 +368,8 @@ paths:
                   $ref: '#/components/schemas/TransAccountInfo'
                 three_ds_data:
                   $ref: '#/components/schemas/Trans3dsData'
+                three_ds_additional_data:
+                  $ref: '#/components/schemas/Trans3dsAdditionalData'
                 payer:
                   $ref: '#/components/schemas/TransPayerRequest'
                 terminal_data:
@@ -2840,9 +2842,7 @@ components:
     Trans3dsData:
       type: object
       description: |-
-        If 3DS is requested, merchant may send the necessary information such as device data, challenge window size preference, etc.
-
-        Merchant may also perform 3DS authentication using third party MPI/3DS Server and include the result here. In this scenario, please set 'require_3ds' to 'false'.
+        Merchant may perform 3DS authentication using third party MPI/3DS Server and include the result here. In this scenario, please set 'require_3ds' to 'false'.
       properties:
         xid:
           type: string
@@ -2893,29 +2893,10 @@ components:
           maxLength: 16
           description: 'This indicate 3DS version value. Example: 1.0.2, 2.1.0, 2.2.0'
           example: 2.1.0
-        challenge_window_size:
-          type: string
-          enum:
-            - '1'
-            - '2'
-            - '3'
-            - '4'
-            - '5'
-          example: '1'
-          description: |-
-            Dimensions of the challenge window that has been displayed to the Cardholder.
-
-            1 - 250 x 400
-            2 - 390 x 400
-            3 - 500 x 600
-            4 - 600 x 400
-            5 - Full screen (default)
     Trans3dsDataResponse:
-      type: object
       description: |-
-        If 3DS is requested, merchant may send the necessary information such as device data, challenge window size preference, etc.
-
-        Merchant may also perform 3DS authentication using third party MPI/3DS Server and include the result here.
+        If 3DS is requested, this object contains the result of 3DS authentication.
+      type: object
       properties:
         xid:
           type: string
@@ -2961,6 +2942,28 @@ components:
           maxLength: 16
           description: 'This indicate 3DS version value. Example: 1.0.2, 2.1.0, 2.2.0'
           example: 2.1.0
+    Trans3dsAdditionalData:
+      type: object
+      description: |-
+        If 3DS is requested, merchant may send the necessary information such as device data, challenge window size preference, etc.
+      properties:
+        challenge_window_size:
+          type: string
+          enum:
+            - '1'
+            - '2'
+            - '3'
+            - '4'
+            - '5'
+          example: '1'
+          description: |-
+            Dimensions of the challenge window that has been displayed to the Cardholder.
+
+            1 - 250 x 400\
+            2 - 390 x 400\
+            3 - 500 x 600\
+            4 - 600 x 400\
+            5 - Full screen (default)
     TransStatus:
       type: string
       enum:
