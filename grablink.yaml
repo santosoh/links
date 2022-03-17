@@ -740,7 +740,7 @@ paths:
                   type: string
                   description: 'A unique identifier which is included as query string parameter when the browser is redirected to the Return URL, and used as referrence key to obtain the 3DS Challenge Result received from ACS.'
                   example: b5cd837fb679458abd56fad58f8a27be
-                three_ds_data:
+                three_ds_additional_data:
                   type: object
                   properties:
                     sms_code:
@@ -751,7 +751,7 @@ paths:
               Example:
                 value:
                   auth_resp_id: b5cd837fb679458abd56fad58f8a27be
-                  three_ds_data:
+                  three_ds_additional_data:
                     sms_code: '123456'
         description: ''
       callbacks:
