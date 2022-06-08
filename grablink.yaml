@@ -1692,13 +1692,13 @@ paths:
         paymentmethodCallback:
           'https://{webhook_endpoint}':
             post:
-              summary: Payment Method Event
+              summary: Add Payment Method Event
               description: An event triggered every time a Payment Method is added.
               requestBody:
                 content:
                   application/json:
                     schema:
-                      $ref: '#/components/schemas/PaymentMethodEvent'
+                      $ref: '#/components/schemas/AddPaymentMethodEvent'
               responses:
                 '200':
                   description: OK
@@ -1831,13 +1831,13 @@ paths:
         paymentmethodCallback:
           'https://{webhook_endpoint}':
             post:
-              summary: Payment Method Event
+              summary: Add Payment Method Event
               description: An event triggered every time a Payment Method is added.
               requestBody:
                 content:
                   application/json:
                     schema:
-                      $ref: '#/components/schemas/PaymentMethodEvent'
+                      $ref: '#/components/schemas/AddPaymentMethodEvent'
               responses:
                 '200':
                   description: OK
@@ -2043,13 +2043,13 @@ paths:
         paymentmethodCallback:
           'https://{webhook_endpoint}':
             post:
-              summary: Payment Method Event
+              summary: Delete Payment Method Event
               description: An event triggered every time a Payment Method is deleted.
               requestBody:
                 content:
                   application/json:
                     schema:
-                      $ref: '#/components/schemas/PaymentMethodEvent'
+                      $ref: '#/components/schemas/DeletePaymentMethodEvent'
               responses:
                 '200':
                   description: OK
@@ -3924,7 +3924,7 @@ components:
         event_type: cancel.success
         status: succeeded
         action_id: '2109220527070101854463'
-    PaymentMethodEvent:
+    AddPaymentMethodEvent:
       allOf:
         - $ref: '#/components/schemas/WebhookRequest'
         - $ref: '#/components/schemas/WebhookRequestAdditional'
@@ -3933,7 +3933,7 @@ components:
         merchant_action_id: 68420ccc49b54d09ba8665419460aa66
         amount:
           currency: SGD
-          value: '100.00'
+          value: '1.00'
         result:
           code: S0000
           message: Success
@@ -3956,6 +3956,22 @@ components:
             issuing_country: MX
             issuing_bank: 'Banco Nacional de Mexico, S.A.'
           fingerprint: 5f87e14bf56c49d9a84536bfa0880fe5
+    DeletePaymentMethodEvent:
+      allOf:
+        - $ref: '#/components/schemas/WebhookRequest'
+      example:
+        action_time: '2021-09-22T05:27:13+00:00'
+        merchant_action_id: c1adb79775db477196103d87b2ad6e0c
+        amount:
+          currency: SGD
+          value: '1.00'
+        result:
+          code: S0000
+          message: Success
+          raw_message: Request successful
+        event_type: delete_payment_method.success
+        status: succeeded
+        action_id: '2109220527070101854463'
     OrderEvent:
       allOf:
         - $ref: '#/components/schemas/OrderResult'
@@ -4162,11 +4178,17 @@ tags:
 
       <SchemaDefinition schemaRef="#/components/schemas/CancelEvent" />
 
-      ## Payment Method API callback
+      ## Add Payment Method API callback
 
       Following request-body is send as POST request on the URL used to register the callback:
 
-      <SchemaDefinition schemaRef="#/components/schemas/PaymentMethodEvent" />
+      <SchemaDefinition schemaRef="#/components/schemas/AddPaymentMethodEvent" />
+
+      ## Delete Payment Method API callback
+
+      Following request-body is send as POST request on the URL used to register the callback:
+
+      <SchemaDefinition schemaRef="#/components/schemas/DeletePaymentMethodEvent" />
 
       ## Order API callback
 
