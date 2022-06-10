@@ -189,6 +189,8 @@ paths:
                         type: string
                         description: Alias of the card number
                         example: cde2399feb94478dab841439d0c7a216
+                  psp_data:
+                    $ref: '#/components/schemas/PspData'
                   status:
                     $ref: '#/components/schemas/TransStatus'
                   next_action:
@@ -676,6 +678,8 @@ paths:
                         type: string
                         description: Alias of the card number
                         example: cde2399feb94478dab841439d0c7a216
+                  psp_data:
+                    $ref: '#/components/schemas/PspData'
                   status:
                     $ref: '#/components/schemas/TransStatus'
                   metadata:
@@ -841,6 +845,8 @@ paths:
                       fingerprint:
                         type: string
                         description: Alias of the card number
+                  psp_data:
+                    $ref: '#/components/schemas/PspData'
                   status:
                     type: string
                     enum:
@@ -1565,6 +1571,8 @@ paths:
                         type: string
                         description: Alias of the card number
                         example: cde2399feb94478dab841439d0c7a216
+                  psp_data:
+                    $ref: '#/components/schemas/PspData'
                   status:
                     $ref: '#/components/schemas/TransStatus'
                   next_action:
@@ -1788,6 +1796,8 @@ paths:
                         type: string
                         description: Alias of the card number
                         example: cde2399feb94478dab841439d0c7a216
+                  psp_data:
+                    $ref: '#/components/schemas/PspData'
                   status:
                     $ref: '#/components/schemas/TransStatus'
                   metadata:
@@ -3642,6 +3652,13 @@ components:
           type: string
           description: Acquirer response message
           example: Success
+    PspData:
+      type: object
+      properties:
+        psp_code:
+          type: string
+        psp_trans_id:
+          type: string
     TerminalData:
       type: object
       properties:
@@ -3707,6 +3724,8 @@ components:
           type: string
           description: Echo from request message
           example: 581c6281cdf747c8b4de5ee2d9408388
+        psp_data:
+          $ref: '#/components/schemas/PspData'
         status:
           $ref: '#/components/schemas/TransStatus'
         amount:
@@ -3755,6 +3774,8 @@ components:
             - capture.fail
             - refund.fail
             - cancel.fail
+        psp_data:
+          $ref: '#/components/schemas/PspData'
         status:
           $ref: '#/components/schemas/TransStatus'
         terminal_data:
