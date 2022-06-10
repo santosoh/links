@@ -2856,13 +2856,13 @@ components:
           type: string
           maxLength: 50
           description: Payment Instrument Reference ID.
-        brand:
+        token_type:
           type: string
           description: card scheme brand
           enum:
-            - visa
-            - mc
-          example: visa
+            - vts
+            - mdes
+          example: vts
     PaymentMethodAddProvisionRequest:
       type: object
       description: Mandatory for push card provisioning payment method.
@@ -2871,13 +2871,13 @@ components:
           type: string
           maxLength: 50
           description: Payment Instrument Reference ID.
-        brand:
+        token_type:
           type: string
           description: card scheme brand
           enum:
-            - visa
-            - mc
-          example: visa
+            - vts
+            - mdes
+          example: vts
         one_time_password:
           type: string
           maxLength: 50
