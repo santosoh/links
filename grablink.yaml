@@ -2757,7 +2757,22 @@ paths:
                     type: string
                   amount:
                     $ref: '#/components/schemas/TransAmountResponse'
+                  payer:
+                    $ref: '#/components/schemas/TransPayerResponse'
+                  description:
+                    type: string
                   payment_link:
+                    type: string
+                  type:
+                    type: string
+                    enum:
+                      - single_use
+                      - multi_use
+                  expires_at:
+                    type: string
+                  created_by:
+                    type: string
+                  route_indicator:
                     type: string
                   status:
                     type: string
@@ -2766,6 +2781,10 @@ paths:
                       - expired
                       - completed
                       - deactivated
+                  created_at:
+                    type: string
+                  updated_at:
+                    type: string
                   metadata:
                     type: object
       description: List Payment Link
